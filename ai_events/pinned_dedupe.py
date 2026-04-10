@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from difflib import SequenceMatcher
 from functools import lru_cache
 from pathlib import Path
@@ -107,15 +107,16 @@ def delete_scraper_rows_duplicating_pinned_catalog(conn: Connection) -> list[str
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT id, title, starts_at, ends_at, source, pinned
+            SELECT id, title, starts_at, ends_at, source
             FROM events
             WHERE COALESCE(pinned, false) = false
               AND (source IS DISTINCT FROM 'pinned')
             """
         )
         rows = cur.fetchall()
+    to_delete: list[str] = []
     for row in rows:
-        rid, title, st, en, src, _pin = row
+        rid, title, st, en, src = row
         ev = RawEvent(
             source=src or "unknown",
             url="https://dedupe.local/ignore",
@@ -132,8 +133,10 @@ def delete_scraper_rows_duplicating_pinned_catalog(conn: Connection) -> list[str
             pinned=False,
         )
         if is_scraper_duplicate_of_pinned(ev):
-            with conn.cursor() as cur:
+            to_delete.append(str(rid))
+    if to_delete:
+        with conn.cursor() as cur:
+            for rid in to_delete:
                 cur.execute("DELETE FROM events WHERE id = %s", (rid,))
-            deleted.append(str(rid))
     conn.commit()
-    return deleted
+    return to_delete

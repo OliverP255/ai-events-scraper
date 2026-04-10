@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 from ai_events.webapp import db
 from ai_events.webapp.queries import list_sources, search_events, search_events_csv
 from ai_events.webapp.settings import database_url, load_env
@@ -37,6 +38,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="AI Events", lifespan=lifespan)
+
+app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
 # Lets the UI work when opened from file:// or another origin (dev); same-origin needs no CORS.
 app.add_middleware(

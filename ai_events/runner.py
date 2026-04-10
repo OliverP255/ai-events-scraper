@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from ai_events.curated_events import ensure_pinned_events, prune_stale_catalog_rows
+from ai_events.pinned_dedupe import delete_scraper_rows_duplicating_pinned_catalog
 from ai_events.http_util import client as make_client
 from ai_events.pg_connect import connect_psycopg
 from ai_events.sources.eventbrite import run_eventbrite
@@ -80,6 +81,7 @@ def cmd_db_apply_schema(args: argparse.Namespace) -> int:
 def cmd_db_prune_catalog(args: argparse.Namespace) -> int:
     with connect_psycopg() as conn:
         r = prune_stale_catalog_rows(conn)
+        dup_ids = delete_scraper_rows_duplicating_pinned_catalog(conn)
     n = int(r["total_removed"])
     print(
         f"prune-catalog: removed {n} row(s) "
@@ -91,6 +93,12 @@ def cmd_db_prune_catalog(args: argparse.Namespace) -> int:
         print("  deleted ids (mock URL / test URL):", ", ".join(r["removed_mock_url"]), file=sys.stderr)
     if r["removed_stale_pinned_source"]:
         print("  deleted ids (stale pinned):", ", ".join(r["removed_stale_pinned_source"]), file=sys.stderr)
+    if dup_ids:
+        print(
+            f"prune-catalog: removed {len(dup_ids)} scraper row(s) duplicating pinned catalog titles/dates",
+            file=sys.stderr,
+        )
+        print("  deleted ids (scraper dupes):", ", ".join(dup_ids), file=sys.stderr)
     return 0
 
 
@@ -141,7 +149,7 @@ def main(argv: list[str] | None = None) -> int:
     d_apply.set_defaults(func=cmd_db_apply_schema)
     d_prune = d_sub.add_parser(
         "prune-catalog",
-        help="Delete legacy mock pinned.catalog URLs and stale source=pinned rows not in pinned_events.json",
+        help="Remove mock pinned.catalog URLs, stale pinned rows, and scraper rows that duplicate pinned_events.json (title/date)",
     )
     d_prune.set_defaults(func=cmd_db_prune_catalog)
 
