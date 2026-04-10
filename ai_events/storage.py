@@ -33,8 +33,8 @@ def _norm_url(url: str) -> str:
 
 def event_key(ev: RawEvent) -> str:
     nu = _norm_url(ev.url)
-    # Pinned catalog URLs are unique per slug; key on URL only so date/title edits stay one row.
-    if ev.pinned and nu.startswith("https://pinned.catalog/"):
+    # Pinned rows: stable id from canonical URL only (dates/titles can change without orphan rows).
+    if ev.pinned:
         h = hashlib.sha256(nu.encode("utf-8")).hexdigest()
         return h[:32]
     when = ev.starts_at.isoformat() if ev.starts_at else ""

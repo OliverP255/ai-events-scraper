@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from ai_events.models import RawEvent
+from ai_events.pinned_dedupe import is_scraper_duplicate_of_pinned
 
 # --- Disabled for now (re-enable in should_keep one at a time) -----------------
 # Broad "enterprise / workplace AI" signals (title + description).
@@ -273,6 +274,8 @@ def passes_in_person(ev: RawEvent) -> bool:
 
 
 def should_keep(ev: RawEvent, *, require_london: bool = True) -> bool:
+    if is_scraper_duplicate_of_pinned(ev):
+        return False
     if not passes_business_and_ai_keywords(ev):
         return False
     if require_london and not passes_london(ev):
@@ -286,6 +289,8 @@ def should_keep_techuk_ai(ev: RawEvent, *, require_london: bool = True) -> bool:
     """
     techUK listings are enterprise-oriented; only require AI/ML-related wording and London.
     """
+    if is_scraper_duplicate_of_pinned(ev):
+        return False
     t = _keyword_blob(ev)
     if len(t.strip()) < 3:
         return False

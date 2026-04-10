@@ -4,7 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from ai_events.curated_events import ensure_pinned_events
+from ai_events.curated_events import ensure_pinned_events, prune_stale_catalog_rows
 from ai_events.http_util import client as make_client
 from ai_events.pg_connect import connect_psycopg
 from ai_events.sources.eventbrite import run_eventbrite
@@ -77,6 +77,23 @@ def cmd_db_apply_schema(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_db_prune_catalog(args: argparse.Namespace) -> int:
+    with connect_psycopg() as conn:
+        r = prune_stale_catalog_rows(conn)
+    n = int(r["total_removed"])
+    print(
+        f"prune-catalog: removed {n} row(s) "
+        f"(mock/placeholder URLs: {len(r['removed_mock_url'])}, "
+        f"stale source=pinned: {len(r['removed_stale_pinned_source'])})",
+        file=sys.stderr,
+    )
+    if r["removed_mock_url"]:
+        print("  deleted ids (mock URL / test URL):", ", ".join(r["removed_mock_url"]), file=sys.stderr)
+    if r["removed_stale_pinned_source"]:
+        print("  deleted ids (stale pinned):", ", ".join(r["removed_stale_pinned_source"]), file=sys.stderr)
+    return 0
+
+
 def cmd_export(args: argparse.Namespace) -> int:
     with connect_psycopg() as conn:
         if args.format == "csv":
@@ -122,6 +139,11 @@ def main(argv: list[str] | None = None) -> int:
     d_sub = d.add_subparsers(dest="db_cmd", required=True)
     d_apply = d_sub.add_parser("apply-schema", help="Apply sql/schema.sql (needs DATABASE_URL)")
     d_apply.set_defaults(func=cmd_db_apply_schema)
+    d_prune = d_sub.add_parser(
+        "prune-catalog",
+        help="Delete legacy mock pinned.catalog URLs and stale source=pinned rows not in pinned_events.json",
+    )
+    d_prune.set_defaults(func=cmd_db_prune_catalog)
 
     args = p.parse_args(argv)
     code = args.func(args)
