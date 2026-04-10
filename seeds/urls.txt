@@ -1,0 +1,3 @@
+# One public event URL per line. Paste links you copied from LinkedIn, X, newsletters, etc.
+# Example (replace with real URLs):
+# https://www.eventbrite.com/e/example-tickets-123
