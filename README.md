@@ -1,9 +1,9 @@
-# Enterprise AI events — London (in-person)
+# Enterprise AI events — London 
 
 
 https://ai-events-web.onrender.com/ 
 
-Python scraper that aggregates **upcoming in-person** events in **London** matching **enterprise / workplace AI** keywords. Data is stored in **PostgreSQL** (Neon or local Docker); the web UI reads the same database.
+Python scraper that aggregates events in **London** matching **enterprise / workplace AI** keywords. Data is stored in **PostgreSQL** (Neon or local Docker); the web UI reads the same database.
 
 ## Setup
 
