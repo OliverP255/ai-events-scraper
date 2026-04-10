@@ -46,7 +46,7 @@ query MeetupEventSearch($filter: EventSearchFilter!, $sort: KeywordSort, $first:
 }
 """
 
-_MAX_EVENT_URLS = 5000
+_MAX_EVENT_URLS = 2000
 _GQL_PAGE_SIZE = 100
 
 

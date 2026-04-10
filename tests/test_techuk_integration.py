@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import httpx
 from psycopg import Connection
@@ -13,13 +14,18 @@ from tests.fixtures_html import EVENT_PAGE_TECHUK_LONDON, techuk_calendar_two_li
 
 
 def _transport_techuk() -> httpx.MockTransport:
-    cal = "https://www.techuk.org/what-we-deliver/events.html"
     one = "https://www.techuk.org/what-we-deliver/events/one.html"
     two = "https://www.techuk.org/what-we-deliver/flagship-and-sponsored-events/two.html"
 
     def handler(request: httpx.Request) -> httpx.Response:
         u = str(request.url)
-        if u == cal:
+        path = urlparse(u).path
+        if path == "/ems/eventCalendar/ajaxResults/":
+            return httpx.Response(
+                200,
+                json={"resultCount": 0, "moreResults": False, "results": ""},
+            )
+        if path == "/what-we-deliver/events.html":
             return httpx.Response(200, text=techuk_calendar_two_links())
         if u == one:
             return httpx.Response(200, text=EVENT_PAGE_TECHUK_LONDON)

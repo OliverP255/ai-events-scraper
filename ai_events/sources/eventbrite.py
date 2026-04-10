@@ -16,9 +16,6 @@ EB_URL_RE = re.compile(
     re.I,
 )
 
-# Pages per category listing (?page=N); higher = more discover URLs (more HTTP to Eventbrite).
-DEFAULT_MAX_LISTING_PAGES = 15
-
 LISTINGS = [
     "https://www.eventbrite.com/d/united-kingdom--london/ai/",
     "https://www.eventbrite.com/d/united-kingdom--london/enterprise-ai/",
@@ -34,7 +31,7 @@ def _strip_query(url: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
-def discover_event_urls(client: httpx.Client, max_pages: int = DEFAULT_MAX_LISTING_PAGES) -> list[str]:
+def discover_event_urls(client: httpx.Client, max_pages: int = 4) -> list[str]:
     seen: set[str] = set()
     out: list[str] = []
     for base in LISTINGS:

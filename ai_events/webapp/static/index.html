@@ -378,6 +378,16 @@
       transform: translateY(-1px);
     }
 
+    .card.card-pinned {
+      border-color: rgba(176, 140, 72, 0.65);
+      box-shadow: 0 0 0 1px rgba(184, 148, 88, 0.35);
+    }
+
+    .card.card-pinned:hover {
+      border-color: rgba(196, 162, 96, 0.8);
+      box-shadow: 0 0 0 1px rgba(196, 162, 96, 0.45);
+    }
+
     .card-top {
       display: flex;
       flex-wrap: wrap;
@@ -409,6 +419,13 @@
       padding: 0.2rem 0.45rem;
       border-radius: 4px;
       white-space: nowrap;
+    }
+
+    .badge.badge-pinned {
+      color: #d4c4a0;
+      border: 1px solid rgba(176, 140, 72, 0.75);
+      box-shadow: 0 0 0 1px rgba(184, 148, 88, 0.28);
+      letter-spacing: 0.1em;
     }
 
     .when {
@@ -510,6 +527,28 @@
       text-overflow: ellipsis;
     }
 
+    .cal-pill.cal-pill-pinned {
+      border-color: rgba(176, 140, 72, 0.7);
+      box-shadow: none;
+      background: rgba(148, 118, 64, 0.14);
+      color: #e8dcc8;
+    }
+
+    .cal-pill-pin-label {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #d4c4a0;
+      border: 1px solid rgba(176, 140, 72, 0.75);
+      box-shadow: 0 0 0 1px rgba(184, 148, 88, 0.28);
+      border-radius: 3px;
+      padding: 0.05rem 0.22rem;
+      margin-right: 0.3rem;
+      vertical-align: 0.05em;
+    }
+
     .cal-more {
       font-family: var(--mono);
       font-size: 0.68rem;
@@ -600,6 +639,16 @@
       border-bottom: 1px solid var(--border);
     }
 
+    .modal li.modal-li-pinned {
+      margin: 0 -0.35rem;
+      padding-left: 0.35rem;
+      padding-right: 0.35rem;
+      border-radius: 6px;
+      border: 1px solid rgba(176, 140, 72, 0.55);
+      box-shadow: 0 0 0 1px rgba(184, 148, 88, 0.22);
+      border-bottom: 1px solid rgba(176, 140, 72, 0.45);
+    }
+
     .modal li:last-child { border-bottom: none; }
 
     .modal li a {
@@ -614,6 +663,21 @@
       font-size: 0.72rem;
       color: var(--muted);
       margin-top: 0.2rem;
+    }
+
+    .modal .badge-pinned-inline {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #d4c4a0;
+      border: 1px solid rgba(176, 140, 72, 0.75);
+      box-shadow: 0 0 0 1px rgba(184, 148, 88, 0.28);
+      padding: 0.12rem 0.38rem;
+      border-radius: 4px;
+      margin-right: 0.45rem;
+      vertical-align: 0.05em;
     }
 
     footer {
@@ -632,7 +696,7 @@
   <div class="wrap">
     <header>
       <p class="eyebrow">Events</p>
-      <h1>Enterprise AI events · London</h1>
+      <h1>Enterprise AI Calendar · London</h1>
       <p class="sub">Search or browse by month. Filters apply to both views.</p>
     </header>
 
@@ -933,9 +997,17 @@
           const maxShow = 3;
           evs.slice(0, maxShow).forEach((row) => {
             const pill = document.createElement("span");
-            pill.className = "cal-pill";
+            pill.className = "cal-pill" + (row.pinned ? " cal-pill-pinned" : "");
             const t = fmtTime(row.starts_at);
-            pill.textContent = (t ? t + " · " : "") + (row.title || "(untitled)");
+            if (row.pinned) {
+              const pin = document.createElement("span");
+              pin.className = "cal-pill-pin-label";
+              pin.textContent = "PINNED";
+              pill.appendChild(pin);
+            }
+            pill.appendChild(
+              document.createTextNode((t ? t + " · " : "") + (row.title || "(untitled)"))
+            );
             pill.title = row.title || "";
             cell.appendChild(pill);
           });
@@ -967,7 +1039,7 @@
 
       function renderCard(row) {
         const li = document.createElement("li");
-        li.className = "card";
+        li.className = "card" + (row.pinned ? " card-pinned" : "");
         const top = document.createElement("div");
         top.className = "card-top";
         const h2 = document.createElement("h2");
@@ -978,8 +1050,13 @@
         a.textContent = row.title || "(untitled)";
         h2.appendChild(a);
         const badge = document.createElement("span");
-        badge.className = "badge";
-        badge.textContent = row.source || "—";
+        if (row.pinned) {
+          badge.className = "badge badge-pinned";
+          badge.textContent = "PINNED";
+        } else {
+          badge.className = "badge";
+          badge.textContent = row.source || "—";
+        }
         top.appendChild(h2);
         top.appendChild(badge);
         li.appendChild(top);
@@ -1016,6 +1093,13 @@
         ul.innerHTML = "";
         evs.forEach((row) => {
           const li = document.createElement("li");
+          if (row.pinned) li.classList.add("modal-li-pinned");
+          if (row.pinned) {
+            const pin = document.createElement("span");
+            pin.className = "badge-pinned-inline";
+            pin.textContent = "PINNED";
+            li.appendChild(pin);
+          }
           const a = document.createElement("a");
           a.href = row.url;
           a.target = "_blank";

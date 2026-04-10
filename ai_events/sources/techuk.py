@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import calendar
 import re
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urlencode, urljoin
 
 import httpx
 from bs4 import BeautifulSoup
@@ -16,6 +16,111 @@ from ai_events.schema_ld import first_event_dict
 from ai_events.storage import upsert_event
 
 CALENDAR_URL = "https://www.techuk.org/what-we-deliver/events.html"
+
+# Preside EMS: paginated JSON; page size must match the site’s `data-page-size` on the filter form.
+EMS_EVENT_CALENDAR_AJAX_URL = "https://www.techuk.org/ems/eventCalendar/ajaxResults/"
+_AJAX_PAGE_SIZE = 8
+
+# Inclusive month views: current month through the same month two calendar years ahead (25 months).
+_MONTHS_IN_TWO_YEAR_WINDOW = 25
+
+
+def _calendar_month_window() -> list[tuple[int, int]]:
+    """(year, month) for each month from today’s month through +24 months."""
+    today = date.today()
+    y, m = today.year, today.month
+    out: list[tuple[int, int]] = []
+    for _ in range(_MONTHS_IN_TWO_YEAR_WINDOW):
+        out.append((y, m))
+        m += 1
+        if m > 12:
+            m = 1
+            y += 1
+    return out
+
+
+def listing_url_for_month(year: int, month: int) -> str:
+    """techUK calendar with month filter, e.g. ?date=2026-4&sort=date&order=asc"""
+    q = urlencode({"date": f"{year}-{month}", "sort": "date", "order": "asc"})
+    return f"{CALENDAR_URL}?{q}"
+
+
+def extract_event_links_from_listing_html(html: str, listing_page_url: str) -> list[str]:
+    """Collect unique event detail URLs from one calendar listing HTML response."""
+    soup = BeautifulSoup(html, "html.parser")
+    seen: set[str] = set()
+    out: list[str] = []
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        full = urljoin(listing_page_url, href)
+        if full.rstrip("/").endswith("/events.html"):
+            continue
+        if "/what-we-deliver/events/" in href and href.endswith(".html"):
+            if full not in seen:
+                seen.add(full)
+                out.append(full)
+        elif "/what-we-deliver/flagship-and-sponsored-events/" in href and href.endswith(".html"):
+            if full not in seen:
+                seen.add(full)
+                out.append(full)
+    return out
+
+
+def _ajax_listing_base_url() -> str:
+    """Base URL for resolving relative links inside EMS ajax HTML fragments."""
+    return CALENDAR_URL
+
+
+def _discover_event_urls_for_month(client: httpx.Client, year: int, month: int) -> list[str]:
+    """
+    One calendar month: links from the public listing HTML plus all paginated EMS ajax chunks.
+    The listing page only embeds the first batch; “Show more” loads the rest via ajaxResults + offset.
+    """
+    seen: set[str] = set()
+    ordered: list[str] = []
+    listing = listing_url_for_month(year, month)
+    referer = listing
+
+    try:
+        r = client.get(listing)
+        r.raise_for_status()
+        for u in extract_event_links_from_listing_html(r.text, str(r.url)):
+            if u not in seen:
+                seen.add(u)
+                ordered.append(u)
+    except httpx.HTTPError:
+        pass
+
+    params = {"date": f"{year}-{month}", "sort": "date", "order": "asc"}
+    ajax_headers = {
+        "X-Requested-With": "XMLHttpRequest",
+        "Referer": referer,
+    }
+    offset = 0
+    base_for_fragments = _ajax_listing_base_url()
+    while True:
+        try:
+            r = client.get(
+                EMS_EVENT_CALENDAR_AJAX_URL,
+                params={**params, "offset": str(offset)},
+                headers=ajax_headers,
+            )
+            r.raise_for_status()
+            payload = r.json()
+        except (httpx.HTTPError, ValueError, TypeError):
+            break
+        results = payload.get("results")
+        if not isinstance(results, str):
+            break
+        for u in extract_event_links_from_listing_html(results, base_for_fragments):
+            if u not in seen:
+                seen.add(u)
+                ordered.append(u)
+        if not payload.get("moreResults"):
+            break
+        offset += _AJAX_PAGE_SIZE
+
+    return ordered
 
 
 def _month_num(name: str) -> int | None:
@@ -130,27 +235,18 @@ def parse_techuk_event_html(html: str, page_url: str) -> dict[str, Any] | None:
 
 
 def discover_event_urls(client: httpx.Client) -> list[str]:
-    try:
-        r = client.get(CALENDAR_URL)
-        r.raise_for_status()
-    except httpx.HTTPError:
-        return []
-    soup = BeautifulSoup(r.text, "html.parser")
+    """
+    For each month from today through two years ahead: load the filtered calendar page and
+    all EMS ajax pages (offset pagination) so we capture every event link, not only the first
+    in-page batch. Dedupe URLs globally.
+    """
     seen: set[str] = set()
     out: list[str] = []
-    for a in soup.find_all("a", href=True):
-        href = a["href"].strip()
-        full = urljoin(CALENDAR_URL, href)
-        if full.rstrip("/").endswith("/events.html"):
-            continue
-        if "/what-we-deliver/events/" in href and href.endswith(".html"):
-            if full not in seen:
-                seen.add(full)
-                out.append(full)
-        elif "/what-we-deliver/flagship-and-sponsored-events/" in href and href.endswith(".html"):
-            if full not in seen:
-                seen.add(full)
-                out.append(full)
+    for y, m in _calendar_month_window():
+        for u in _discover_event_urls_for_month(client, y, m):
+            if u not in seen:
+                seen.add(u)
+                out.append(u)
     return out
 
 
