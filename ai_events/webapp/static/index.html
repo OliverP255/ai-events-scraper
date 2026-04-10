@@ -247,11 +247,43 @@
       }
     }
 
-    .toolbar-filter-row .meta {
-      margin-left: auto;
-      align-self: center;
+    .toolbar-end {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.85rem;
       flex: 0 0 auto;
+      margin-left: auto;
       padding-bottom: 0.15rem;
+    }
+
+    .btn-export {
+      appearance: none;
+      font: inherit;
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.75rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .btn-export:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+      background: var(--elevated);
+    }
+
+    .btn-export:focus-visible {
+      outline: 2px solid var(--border-strong);
+      outline-offset: 2px;
+    }
+
+    .toolbar-end .meta {
+      margin-left: 0;
     }
 
     .cal-nav {
@@ -627,8 +659,11 @@
             <input type="date" id="tod">
           </div>
         </div>
-        <span class="meta meta-search" id="count"></span>
-        <span class="meta meta-cal" id="cal-meta" aria-live="polite"></span>
+        <div class="toolbar-end">
+          <button type="button" class="btn-export search-only" id="btn-export-csv">Export CSV</button>
+          <span class="meta meta-search" id="count"></span>
+          <span class="meta meta-cal" id="cal-meta" aria-live="polite"></span>
+        </div>
       </div>
     </div>
 
@@ -668,7 +703,7 @@
 
     <footer>
       Load this app from <code>python -m ai_events serve</code> (not as a raw file). API:
-      <code>/api/events</code> · <code>/api/meta</code> · <code>/api/health</code>
+      <code>/api/events</code> · <code>/api/export</code> · <code>/api/meta</code> · <code>/api/health</code>
     </footer>
   </div>
 
@@ -767,6 +802,37 @@
         p.set("limit", "100");
         p.set("offset", "0");
         return p.toString();
+      }
+
+      /** Same filters as search / API, without pagination (for CSV export). */
+      function buildQueryExport() {
+        const p = new URLSearchParams();
+        const q = $("q").value.trim();
+        if (q) p.set("q", q);
+        const src = $("src").value;
+        if (src) p.set("source", src);
+        if ($("fromd").value) p.set("from", $("fromd").value + "T00:00:00");
+        if ($("tod").value) p.set("to", $("tod").value + "T23:59:59");
+        return p.toString();
+      }
+
+      async function exportSearchCsv() {
+        try {
+          const r = await fetch(apiUrl("/api/export?" + buildQueryExport()));
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          const blob = await r.blob();
+          const u = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = u;
+          a.download = "events.csv";
+          a.rel = "noopener";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(u);
+        } catch (e) {
+          alert("Export failed: " + (e && e.message ? e.message : String(e)));
+        }
       }
 
       function monthRange(y, m) {
@@ -1081,6 +1147,8 @@
         $(id).addEventListener("input", scheduleSearch);
         $(id).addEventListener("change", scheduleSearch);
       });
+
+      $("btn-export-csv").addEventListener("click", () => exportSearchCsv());
 
       const initialTab = sessionStorage.getItem(TAB_KEY) === "calendar" ? "calendar" : "search";
       if (initialTab === "calendar") {

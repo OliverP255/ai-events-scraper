@@ -6,9 +6,9 @@ from pathlib import Path
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from ai_events.webapp import db
-from ai_events.webapp.queries import list_sources, search_events
+from ai_events.webapp.queries import list_sources, search_events, search_events_csv
 from ai_events.webapp.settings import database_url, load_env
 
 load_env()
@@ -85,6 +85,47 @@ async def api_events(
         "offset": offset,
         "database_available": pool is not None,
     }
+
+
+async def _csv_export_response(
+    q: str | None,
+    source: str | None,
+    date_from: str | None,
+    date_to: str | None,
+) -> Response:
+    df = _parse_dt(date_from)
+    dt = _parse_dt(date_to)
+    text = await search_events_csv(q=q, source=source, date_from=df, date_to=dt)
+    return Response(
+        content="\ufeff" + text if text else "",
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": 'attachment; filename="events.csv"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@app.get("/api/export")
+async def export_events_csv(
+    q: str | None = Query(None),
+    source: str | None = Query(None),
+    date_from: str | None = Query(None, alias="from"),
+    date_to: str | None = Query(None, alias="to"),
+) -> Response:
+    """Download CSV of all events matching the same filters as /api/events (up to 50k rows)."""
+    return await _csv_export_response(q, source, date_from, date_to)
+
+
+@app.get("/api/export.csv")
+async def export_events_csv_dotted(
+    q: str | None = Query(None),
+    source: str | None = Query(None),
+    date_from: str | None = Query(None, alias="from"),
+    date_to: str | None = Query(None, alias="to"),
+) -> Response:
+    """Same as GET /api/export (legacy path; some proxies mishandle dots in URLs)."""
+    return await _csv_export_response(q, source, date_from, date_to)
 
 
 @app.get("/")

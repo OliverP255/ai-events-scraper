@@ -21,3 +21,10 @@ def test_api_without_database_url(monkeypatch):
 
         h = client.get("/api/health")
         assert h.json()["database_configured"] is False
+
+        for path in ("/api/export", "/api/export.csv"):
+            csv_r = client.get(path)
+            assert csv_r.status_code == 200
+            assert csv_r.headers.get("content-type", "").startswith("text/csv")
+            cd = csv_r.headers.get("content-disposition", "")
+            assert "attachment" in cd.lower() and "events.csv" in cd
