@@ -1,13 +1,12 @@
 ## Target
 
-- In-person **enterprise AI** events in **London** (hustle-pitch denylist + AI/professional gates in `ai_events/filters.py`).
+- In-person **enterprise AI** events in **London** (hustle/beginner denylists, reject dev/hackathon/research audience, require founder/exec/investor-style signals — see `ai_events/filters.py`).
 
 ## Built-in scrapers
 
 - Meetup — Meetup `gql2` `eventSearch` (keywords: enterprise AI, machine learning, LLMs, AI agent; London centre, 25 mi); see `ai_events/sources/meetup.py`.  
-- Luma — `https://luma.com/ai`, `https://luma.com/london` (offline events in SSR payload)  
 - Eventbrite — London discover listings (`/ai/`, `/enterprise-ai/`, `/machine-learning/`, plus legacy category URLs in code) → JSON-LD  
-- techUK — [Events calendar](https://www.techuk.org/what-we-deliver/events.html)  
+- techUK — [Events calendar](https://www.techuk.org/what-we-deliver/events.html) — event pages parsed from HTML (JSON-LD if present); broad AI filter (`should_keep_techuk_ai`, UK-wide including online)  
 
 ## Manual / rich sources (no paid APIs)
 
@@ -17,6 +16,6 @@ Examples of where to grab links (search, then copy the **event** URL — automat
 
 - LinkedIn Events search, e.g. `https://www.linkedin.com/search/results/events/?keywords=enterprise%20ai`  
 - LinkedIn post search for announcements  
-- X (Twitter) posts linking to Eventbrite, Luma, venue sites, etc.
+- X (Twitter) posts linking to Eventbrite, venue sites, etc.
 
 See `README.md` for CLI usage.

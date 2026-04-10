@@ -43,3 +43,4 @@ class RawEvent:
     is_in_person: bool | None
     attendance_mode_uri: str | None
     extra: dict[str, Any] = field(default_factory=dict)
+    pinned: bool = False

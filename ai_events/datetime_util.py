@@ -1,4 +1,4 @@
-"""Parse event start/end instants from strings (schema.org, meta tags, Luma)."""
+"""Parse event start/end instants from strings (schema.org, meta tags)."""
 
 from __future__ import annotations
 

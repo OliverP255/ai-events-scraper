@@ -125,8 +125,6 @@
       margin-bottom: 1.5rem;
     }
 
-    .banner code { font-family: var(--mono); font-size: 0.8em; }
-
     .toolbar {
       display: flex;
       flex-direction: column;
@@ -635,7 +633,7 @@
     <header>
       <p class="eyebrow">Events</p>
       <h1>Enterprise AI events · London</h1>
-      <p class="sub">Search and calendar views. Postgres full-text search; filters apply to both.</p>
+      <p class="sub">Search or browse by month. Filters apply to both views.</p>
     </header>
 
     <div class="tabs" role="tablist" aria-label="View">
@@ -644,13 +642,13 @@
     </div>
 
     <div class="banner" id="nodb" hidden>
-      No <code>DATABASE_URL</code> — set <code>.env</code> and run <code>python -m ai_events db apply-schema</code>, then load data.
+      No event list is available yet. Once events are added, they will appear here.
     </div>
 
     <div class="toolbar" id="toolbar" hidden>
       <div class="toolbar-search-row">
         <div class="search">
-          <input type="search" id="q" placeholder="Search title, description, venue, city…" autocomplete="off" aria-label="Search events">
+          <input type="search" id="q" placeholder="Search events, venues, or topics…" autocomplete="off" aria-label="Search events">
         </div>
       </div>
       <div class="toolbar-filter-row">
@@ -712,10 +710,7 @@
       </div>
     </div>
 
-    <footer>
-      Load this app from <code>python -m ai_events serve</code> (not as a raw file). API:
-      <code>/api/events</code> · <code>/api/export</code> · <code>/api/meta</code> · <code>/api/health</code>
-    </footer>
+    <footer>In-person enterprise AI events in London.</footer>
   </div>
 
   <script>
@@ -743,13 +738,12 @@
         return API_ORIGIN + p;
       }
 
-      function netErr(e) {
-        let msg = e && e.message ? e.message : String(e);
+      function loadFailedMessage(e) {
+        const msg = e && e.message ? e.message : String(e);
         if (msg === "Failed to fetch" || msg === "NetworkError when attempting to fetch resource.") {
-          msg +=
-            " Use the URL from the terminal (e.g. http://127.0.0.1:8765/). Do not open index.html as a file. Wrong port? Append ?api=http://127.0.0.1:YOURPORT once.";
+          return "Couldn’t connect. Check your connection and try again.";
         }
-        return msg;
+        return "Couldn’t load events. Please try again.";
       }
 
       const TAB_KEY = "ai_events_tab";
@@ -830,7 +824,7 @@
       async function exportSearchCsv() {
         try {
           const r = await fetch(apiUrl("/api/export?" + buildQueryExport()));
-          if (!r.ok) throw new Error("HTTP " + r.status);
+          if (!r.ok) throw new Error("export failed");
           const blob = await r.blob();
           const u = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -841,8 +835,8 @@
           a.click();
           a.remove();
           URL.revokeObjectURL(u);
-        } catch (e) {
-          alert("Export failed: " + (e && e.message ? e.message : String(e)));
+        } catch (_) {
+          alert("Couldn’t download the file. Please try again.");
         }
       }
 
@@ -1047,7 +1041,7 @@
         try {
           const qs = buildQuerySearch();
           const r = await fetch(apiUrl("/api/events?" + qs));
-          if (!r.ok) throw new Error("HTTP " + r.status);
+          if (!r.ok) throw new Error("load failed");
           const data = await r.json();
           $("loading").hidden = true;
           $("toolbar").hidden = false;
@@ -1058,7 +1052,7 @@
         } catch (e) {
           $("loading").hidden = true;
           $("err").hidden = false;
-          $("err").textContent = "Could not load: " + netErr(e);
+          $("err").textContent = loadFailedMessage(e);
         }
       }
 
@@ -1068,7 +1062,7 @@
         try {
           const qs = buildQueryCalendar();
           const r = await fetch(apiUrl("/api/events?" + qs));
-          if (!r.ok) throw new Error("HTTP " + r.status);
+          if (!r.ok) throw new Error("load failed");
           const data = await r.json();
           $("loading").hidden = true;
           $("toolbar").hidden = false;
@@ -1078,7 +1072,7 @@
         } catch (e) {
           $("loading").hidden = true;
           $("err").hidden = false;
-          $("err").textContent = "Could not load: " + netErr(e);
+          $("err").textContent = loadFailedMessage(e);
         }
       }
 

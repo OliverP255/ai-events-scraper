@@ -9,11 +9,15 @@ import pytest
 from ai_events.filters import (
     passes_beginner_audience,
     passes_business_and_ai_keywords,
+    passes_consumer_ai_hustle,
     passes_enterprise_ai,
+    passes_founders_executives_tech_leaders,
     passes_hustle_pitch,
+    passes_ic_hackathon_research_audience,
     passes_in_person,
     passes_london,
     should_keep,
+    should_keep_techuk_ai,
 )
 from ai_events.models import RawEvent
 
@@ -64,12 +68,44 @@ def test_passes_enterprise_ai(title: str, desc: str | None, expect: bool) -> Non
         ("Enterprise breakfast", "Claude tooling for teams", True),
         ("Startup pitch night", "machine learning track", True),
         ("Company offsite", "yoga and hiking", False),
-        ("AI meetup", "discuss agents", True),
+        ("AI meetup", "discuss agents", False),
         ("London social", "networking for founders", False),
         ("Side income with AI", "business growth in London", False),
-        ("LLM night for developers", "embeddings and RAG", True),
+        ("LLM night for developers", "embeddings and RAG", False),
         ("Generative AI for beginners", "No prior experience required", False),
         ("Enterprise MLOps meetup", "Advanced RAG patterns", True),
+        ("Founders AI salon", "generative AI and GTM", True),
+        ("RAG deep dive", "for software engineers", False),
+        ("Research symposium on LLMs", "call for papers", False),
+        ("AI hackathon", "build with GPT", False),
+        ("C-suite breakfast", "generative AI strategy", True),
+        (
+            "Build Your First Successful AI SaaS Startup Today! - Workshop",
+            "generative AI",
+            False,
+        ),
+        (
+            "Launch Your Own Successful AI App | AI Startup | Workshop 2026",
+            "machine learning",
+            False,
+        ),
+        (
+            "Viral Content Faceless AI - Income Strategy Workshop",
+            "ChatGPT automation",
+            False,
+        ),
+        ("Building Your First GenAI Solution", "workshop for teams", False),
+        (
+            "How to Go From Raw Idea to Polished Pitch using AI",
+            "generative AI",
+            False,
+        ),
+        ("AI Leadership for Marketing Experts", "generative AI for CMOs", False),
+        (
+            "Build Enterprise Worthy LLM Inference with Open Source and Kubernetes",
+            "AI technical",
+            False,
+        ),
     ],
 )
 def test_passes_business_and_ai_keywords(
@@ -79,41 +115,25 @@ def test_passes_business_and_ai_keywords(
     assert passes_business_and_ai_keywords(ev) is expect
 
 
-@pytest.mark.parametrize(
-    "title,desc,expect",
-    [
-        ("Launch your AI startup today", "machine learning workshop", False),
-        ("Founders AI night", "networking and generative AI", False),
-        ("Enterprise AI breakfast", "B2B LLM deployment for executives", True),
-        ("RAG deep dive", "for software engineers and researchers", True),
-        ("Corporate AI summit", "agents and governance", True),
-    ],
-)
-def test_passes_business_and_ai_keywords_strict_professional(
-    title: str, desc: str | None, expect: bool
-) -> None:
-    ev = _ev(title=title, description=desc, venue=None, city="London")
-    assert passes_business_and_ai_keywords(ev, strict_professional=True) is expect
-
-
-def test_should_keep_strict_rejects_startup_only_even_without_london() -> None:
+def test_passes_consumer_ai_hustle_detects() -> None:
     ev = _ev(
-        title="Startup AI pitch night",
-        description="Founders and machine learning.",
-        venue="Leeds",
-        city="Leeds",
+        title="Launch your own AI app workshop",
+        description="startup",
+        city="London",
     )
-    assert should_keep(ev, require_london=False, strict_professional=True) is False
+    assert passes_consumer_ai_hustle(ev) is True
 
 
-def test_should_keep_strict_allows_engineer_anchor_without_london() -> None:
-    ev = _ev(
-        title="LLM meetup",
-        description="Open discussion for ML engineers.",
-        venue="Leeds",
-        city="Leeds",
-    )
-    assert should_keep(ev, require_london=False, strict_professional=True) is True
+def test_ic_hackathon_research_detects() -> None:
+    ev = _ev(title="ML for researchers", description="LLM papers", city="London")
+    assert passes_ic_hackathon_research_audience(ev) is True
+
+
+def test_founders_executives_signal() -> None:
+    ev = _ev(title="Plain AI", description="agents only", city="London")
+    assert passes_founders_executives_tech_leaders(ev) is False
+    ev2 = _ev(title="Founder AI dinner", description="LLM strategy", city="London")
+    assert passes_founders_executives_tech_leaders(ev2) is True
 
 
 def test_passes_hustle_pitch_detects_spam() -> None:
@@ -219,8 +239,8 @@ def test_should_keep_allows_online_when_london_and_keywords() -> None:
 
 def test_should_reject_without_london_signal() -> None:
     ev = _ev(
-        title="Machine learning meetup",
-        description="analytics",
+        title="Enterprise AI strategy",
+        description="generative AI for leadership",
         venue="Leeds",
         city="Leeds",
         is_in_person=True,
@@ -250,10 +270,40 @@ def test_should_keep_without_london_when_keywords_present() -> None:
     assert should_keep(ev, require_london=False) is True
 
 
-def test_should_keep_ml_meetup_without_london_when_professional_anchor() -> None:
+def test_should_keep_techuk_ai_only_needs_ai_and_london() -> None:
     ev = _ev(
-        title="Machine learning meetup",
-        description="Open discussion.",
+        title="Sector roundtable",
+        description="Discussion of machine learning adoption.",
+        venue="Westminster, London",
+        city="London",
+    )
+    assert should_keep_techuk_ai(ev) is True
+
+
+def test_should_keep_techuk_ai_rejects_without_ai_signal() -> None:
+    ev = _ev(
+        title="Digital policy breakfast",
+        description="Regulation and compliance.",
+        venue="London",
+        city="London",
+    )
+    assert should_keep_techuk_ai(ev) is False
+
+
+def test_should_keep_techuk_ai_rejects_non_london() -> None:
+    ev = _ev(
+        title="AI governance forum",
+        description="generative AI in the public sector",
+        venue="Birmingham",
+        city="Birmingham",
+    )
+    assert should_keep_techuk_ai(ev) is False
+
+
+def test_should_keep_exec_roundtable_without_london() -> None:
+    ev = _ev(
+        title="Executive AI roundtable",
+        description="Open discussion on LLMs.",
         venue="Leeds",
         city="Leeds",
     )

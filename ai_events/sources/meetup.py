@@ -135,7 +135,7 @@ def run_meetup(client: httpx.Client, conn: Connection) -> tuple[int, int]:
         if not parsed:
             continue
         ev = raw_from_parsed("meetup", parsed)
-        if should_keep(ev, require_london=False, strict_professional=True):
+        if should_keep(ev, require_london=False):
             upsert_event(conn, ev)
             kept += 1
     return fetched, kept

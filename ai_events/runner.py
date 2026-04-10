@@ -4,10 +4,10 @@ import argparse
 import sys
 from pathlib import Path
 
+from ai_events.curated_events import ensure_pinned_events
 from ai_events.http_util import client as make_client
 from ai_events.pg_connect import connect_psycopg
 from ai_events.sources.eventbrite import run_eventbrite
-from ai_events.sources.luma import run_luma
 from ai_events.sources.meetup import run_meetup
 from ai_events.sources.seeds import run_seeds
 from ai_events.sources.techuk import run_techuk
@@ -19,7 +19,6 @@ DEFAULT_SEEDS = ROOT / "seeds" / "urls.txt"
 SOURCES = {
     "eventbrite": run_eventbrite,
     "meetup": run_meetup,
-    "luma": run_luma,
     "techuk": run_techuk,
 }
 
@@ -30,6 +29,8 @@ def cmd_run(args: argparse.Namespace) -> int:
         names = list(SOURCES.keys()) + ["seeds"]
 
     with connect_psycopg() as conn:
+        n_pin = ensure_pinned_events(conn)
+        print(f"pinned: loaded {n_pin} catalog events", file=sys.stderr)
         http = make_client(timeout=float(args.timeout))
         try:
             for name in names:
@@ -100,7 +101,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument(
         "--sources",
         default="all",
-        help="Comma-separated: eventbrite,meetup,luma,techuk,seeds or 'all'",
+        help="Comma-separated: eventbrite,meetup,techuk,seeds or 'all'",
     )
     r.add_argument("--seeds", default=str(DEFAULT_SEEDS), help="Newline-separated seed URLs")
     r.add_argument("--timeout", default="30", help="HTTP timeout seconds")

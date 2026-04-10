@@ -43,7 +43,32 @@ _HUSTLE_PITCH = re.compile(
     r"earn\s+(?:£|\$|€)?\s*[\d,]+\s*(?:per|a\s+)?(?:day|week|month)|"
     r"unlimited\s+income|income\s+potential|"
     r"affiliate\s+(?:marketing|program)|dropship(?:ping)?|"
-    r"masterclass\s+for\s+(?:beginners\s+)?(?:to\s+)?(?:launch|build|scale)\s+(?:your\s+)?(?:business|income)"
+    r"masterclass\s+for\s+(?:beginners\s+)?(?:to\s+)?(?:launch|build|scale)\s+(?:your\s+)?(?:business|income)|"
+    r"prompt\s+to\s+profit|"
+    r"\b(?:get\s+rich|get\s+paid)\s+with\s+ai\b"
+    r")",
+    re.I,
+)
+
+# Consumer “build my first SaaS / viral income” — not high-value enterprise AI (reject if matched).
+_CONSUMER_AI_HUSTLE = re.compile(
+    r"(?:"
+    r"(?:build|building|create|creating)\s+your\s+first\b|"
+    r"\byour\s+first\s+successful\b|"
+    r"\blaunch\s+your\s+own\b|"
+    r"\bviral\s+content\b|"
+    r"\bfaceless\s+ai\b|"
+    r"\bfaceless\b.*\b(?:ai|video|channel|youtube)\b|"
+    r"\bincome\s+strategy\b|"
+    r"\b(?:youtube|tiktok|instagram)\s+(?:automation|income|money)\b|"
+    r"\braw\s+idea\b.*\bpitch\b|\bpolished\s+pitch\b|"
+    r"\bgo\s+from\b.*\bidea\b.*\bpitch\b|"
+    r"\bscale\s+your\s+brand\b|"
+    r"\bsocial\s+media\b.*\b(?:networking|startups)\b|"
+    r"\bcontent\s+creation\b.*\b(?:networking|marketing)\b|"
+    r"\bnext[- ]?level\b.*\b(?:sales|social\s+media)\b|"
+    r"\bmarketing\s+experts?\b|"
+    r"\bglobal\s+virtual\s+networking\b"
     r")",
     re.I,
 )
@@ -64,30 +89,6 @@ _BEGINNER_AUDIENCE = re.compile(
     r"\b101\s+series\b|"
     r"\bfor\s+beginners\b"
     r")",
-    re.I,
-)
-
-_BUSINESS_CONTEXT = re.compile(
-    r"\b("
-    r"enterprise|business|company|startup|corporate|b2b|workplace|"
-    r"organisation|organization|founders?|commercial|scale-?ups?|\bsme\b|"
-    r"firm|c-?suite|executives?|industry|industries|employers?|"
-    r"ventures?"
-    r")\b",
-    re.I,
-)
-
-# Engineers, research, product — events that are "serious" but not always "business".
-_PROFESSIONAL_CONTEXT = re.compile(
-    r"\b("
-    r"developer|engineers?|engineering|research(?:er|ers)?|scientists?|"
-    r"universit(?:y|ies)|academic|labs?|phd|papers?|"
-    r"product|platform|infrastructures?|operations?|"
-    r"governance|compliance|security|safety|responsible|"
-    r"meetups?|community|workshops?|conferences?|summits?|"
-    r"hackathons?|builders?|analytics|data\s+teams?|"
-    r"open\s+source|oss\b"
-    r")\b",
     re.I,
 )
 
@@ -115,43 +116,45 @@ _AI_TECH = re.compile(
     re.I,
 )
 
-# Strong standalone signals — one hit is enough without business/professional words.
-_STRONG_AI = re.compile(
+# Targets IC technical roles, hackathons, or academic research — reject if matched.
+_IC_HACK_RESEARCH_AUDIENCE = re.compile(
     r"(?:"
-    r"\b(?:gpt-?4|gpt-?3|gpt-?5|openai|anthropic)\b|"
-    r"\blangchain\b|\bllama\b|"
-    r"retrieval[\s-]augmented|"
-    r"large\s+language\s+models?"
+    r"\bhackathon\b|\bhackfest\b|\bcodefest\b|\bbuildathon\b|"
+    r"\bfor\s+developers\b|\bdevelopers?\s+only\b|\bdev\s+meetup\b|\bdev\s+day\b|"
+    r"\bsoftware\s+engineers?\b|\bml\s+engineers?\b|\bdata\s+engineers?\b|"
+    r"\bfor\s+engineers\b|\bengineers?\s+only\b|\bprincipal\s+engineers?\b|"
+    r"\bresearch\s+(?:seminar|symposium|track|day)\b|\bcall\s+for\s+papers\b|"
+    r"\bfor\s+researchers\b|\bresearchers?\s+only\b|"
+    r"\bacademic\s+conference\b|\bphd\s+students?\b|"
+    r"\bcoding\s+workshop\b|\bhands[- ]on\s+coding\b|"
+    r"\bopen\s+source\s+(?:night|meetup|contributors?)\b|"
+    r"\bpython\b.*\bcoding\b|\bcoding\s*&\s*innovation\b|"
+    r"\bcitizen\s+developers?\b|"
+    r"\bkubernetes\b.*\b(?:llm|inference|gpu|mlops)\b|"
+    r"\b(?:llm|gpu)\s+inference\b.*\bkubernetes\b|"
+    r"\bopen\s+source\b.*\bkubernetes\b.*\b(?:inference|llm)\b"
     r")",
     re.I,
 )
 
-# Count distinct AI-flavoured matches (two+ → community / deep-tech meetup without "business").
-_AI_COUNT = re.compile(
-    r"(?:\bAI\b|\bML\b|\bLLMs?\b|\bGPT\b|machine\s+learning|\bagents?\b|"
-    r"generative\s+ai|gen\s*ai|neural|embeddings?|transformers?|claude|RAG\b)",
-    re.I,
-)
-
-# Eventbrite + Meetup: startup/founder alone is not enough — require org-scale or role signals.
-_STRICT_INDUSTRY_SIGNAL = re.compile(
+# Founders, execs, investors, GTM — at least one required after AI + exclusions.
+_FOUNDER_EXEC_TECH_LEADER = re.compile(
     r"(?:"
+    r"\bco?[- ]?founders?\b|\bfounders?\b|"
+    r"\bstartup\b|\bscale[- ]?ups?\b|\bunicorns?\b|"
+    r"\b(?:CEO|CFO|COO|CMO|CRO|CPO|CHRO|CTO|CIO|CDO)\b|"
     r"\benterprise\b|\bb2b\b|\bcorporate\b|"
-    r"\bexecutives?\b|\bc-?suite\b|"
-    r"\bscale[\s-]?ups?\b|\bscaleup\b|"
+    r"\bexecutives?\b|\bc-?suite\b|\bnon[- ]?exec\b|"
+    r"\bleadership\b|\bleaders?\s+lunch\b|\bleaders?\s+dinner\b|\bleaders?\s+roundtable\b|"
+    r"\bboard\b|\bdirector(?:s)?\s+(?:\&|and|,)?\s*(?:officers?|board)\b|"
     r"\b(?:vice[\s-])?president\b|\b(?:svp|evp)\b|\bvp\b|"
     r"\b(?:chief|head)\s+of\b|"
-    r"\b(?:CEO|CTO|CIO|CISO|CFO|COO|CMO|CDO|CHRO)\b|"
-    r"\bdirectors?\b|\bprincipal\b|"
-    r"\b(?:data\s+)?scientists?\b|"
-    r"\bresearchers?\b|\bresearch\s+(?:lead|director|scientist|fellow)\b|"
-    r"\b(?:software|systems|ml|ai|data|platform|security)\s+engineers?\b|"
-    r"\bengineers?\b|\bengineering\b|"
-    r"\bdevelopers?\b|"
-    r"\b(?:product|engineering|technical)\s+(?:lead|manager|owner|director)\b|"
-    r"\bprofessors?\b|\bphd\b|"
-    r"\bindustry\b.*\b(?:practitioners?|professionals?|leaders?)\b|"
-    r"\b(?:government|public\s+sector)\b.*\b(?:digital|data|ai)\b"
+    r"\bmanaging\s+director\b|"
+    r"\bventure\b|\binvestors?\b|\bangel\s+investors?\b|\bVCs?\b|\bLPs?\b|"
+    r"\bgo[- ]?to[- ]?market\b|\bgtm\b|"
+    r"\bcommercial\b|\brevenue\b|"
+    r"\bproduct\s+(?:leader|strategy|leadership)\b|"
+    r"\bstrategic\b|\bstrategy\b|\broundtable\b|\bsummit\b"
     r")",
     re.I,
 )
@@ -177,41 +180,52 @@ def passes_hustle_pitch(ev: RawEvent) -> bool:
     return bool(_HUSTLE_PITCH.search(t))
 
 
+def passes_consumer_ai_hustle(ev: RawEvent) -> bool:
+    """True if copy looks like first-SaaS / viral-income / faceless-AI course spam (reject)."""
+    t = _keyword_blob(ev)
+    return bool(_CONSUMER_AI_HUSTLE.search(t))
+
+
 def passes_beginner_audience(ev: RawEvent) -> bool:
     """True if copy targets beginners / no experience (should reject)."""
     t = _keyword_blob(ev)
     return bool(_BEGINNER_AUDIENCE.search(t))
 
 
-def passes_business_and_ai_keywords(
-    ev: RawEvent, *, strict_professional: bool = False
-) -> bool:
+def passes_ic_hackathon_research_audience(ev: RawEvent) -> bool:
+    """True if copy targets developers, IC engineers, hackathons, or research (reject)."""
+    t = _keyword_blob(ev)
+    return bool(_IC_HACK_RESEARCH_AUDIENCE.search(t))
+
+
+def passes_founders_executives_tech_leaders(ev: RawEvent) -> bool:
+    """True if copy signals founders, execs, investors, or senior tech-business audience."""
+    t = _keyword_blob(ev)
+    return bool(_FOUNDER_EXEC_TECH_LEADER.search(t))
+
+
+def passes_business_and_ai_keywords(ev: RawEvent) -> bool:
     """
-    Reject hustle pitches and beginner-only positioning; require AI signal.
-
-    If ``strict_professional`` (Eventbrite + Meetup): require enterprise / org-scale or
-    job-title-style signals — startup/founder/generic "business" is not sufficient.
-
-    Otherwise: business OR professional context, or strong / duplicate AI signals for pure-tech meetups.
+    Reject hustle and beginner-only positioning; require AI signal; reject events
+    aimed at developers, hackathons, or academic research; require founder / exec /
+    investor / GTM-style audience signals.
     """
     t = _keyword_blob(ev)
     if len(t.strip()) < 3:
         return False
     if passes_hustle_pitch(ev):
         return False
+    if passes_consumer_ai_hustle(ev):
+        return False
     if passes_beginner_audience(ev):
         return False
     if not _AI_TECH.search(t):
         return False
-    if strict_professional:
-        return bool(_STRICT_INDUSTRY_SIGNAL.search(t))
-    if _BUSINESS_CONTEXT.search(t) or _PROFESSIONAL_CONTEXT.search(t):
-        return True
-    if _STRONG_AI.search(t):
-        return True
-    if len(_AI_COUNT.findall(t)) >= 2:
-        return True
-    return False
+    if passes_ic_hackathon_research_audience(ev):
+        return False
+    if not passes_founders_executives_tech_leaders(ev):
+        return False
+    return True
 
 
 def passes_enterprise_ai(text: str) -> bool:
@@ -258,15 +272,25 @@ def passes_in_person(ev: RawEvent) -> bool:
     return True
 
 
-def should_keep(
-    ev: RawEvent, *, require_london: bool = True, strict_professional: bool = False
-) -> bool:
-    if not passes_business_and_ai_keywords(
-        ev, strict_professional=strict_professional
-    ):
+def should_keep(ev: RawEvent, *, require_london: bool = True) -> bool:
+    if not passes_business_and_ai_keywords(ev):
         return False
     if require_london and not passes_london(ev):
         return False
     # if not passes_in_person(ev):
     #     return False
+    return True
+
+
+def should_keep_techuk_ai(ev: RawEvent, *, require_london: bool = True) -> bool:
+    """
+    techUK listings are enterprise-oriented; only require AI/ML-related wording and London.
+    """
+    t = _keyword_blob(ev)
+    if len(t.strip()) < 3:
+        return False
+    if not _AI_TECH.search(t):
+        return False
+    if require_london and not passes_london(ev):
+        return False
     return True

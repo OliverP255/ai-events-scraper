@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS events (
     attendance_mode_uri TEXT,
     extra_json JSONB NOT NULL DEFAULT '{}'::jsonb,
     fetched_at TIMESTAMPTZ NOT NULL,
+    pinned BOOLEAN NOT NULL DEFAULT false,
     search_tsv tsvector GENERATED ALWAYS AS (
         to_tsvector(
             'english',
@@ -26,3 +27,6 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE INDEX IF NOT EXISTS idx_events_starts ON events (starts_at);
 CREATE INDEX IF NOT EXISTS idx_events_source ON events (source);
 CREATE INDEX IF NOT EXISTS idx_events_fts ON events USING GIN (search_tsv);
+
+-- Existing deployments created before `pinned` was added:
+ALTER TABLE events ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT false;

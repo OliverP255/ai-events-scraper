@@ -33,6 +33,7 @@ def _row_to_dict(r: Any) -> dict[str, Any]:
         "attendance_mode_uri": r["attendance_mode_uri"],
         "extra_json": extra,
         "fetched_at": _iso(r["fetched_at"]),
+        "pinned": bool(r.get("pinned")),
     }
 
 
@@ -121,7 +122,7 @@ async def search_events(
     list_sql = f"""
         SELECT id, source, url, title, description,
                starts_at, ends_at, venue, city, country,
-               is_in_person, attendance_mode_uri, extra_json, fetched_at
+               is_in_person, attendance_mode_uri, extra_json, fetched_at, pinned
         FROM events
         {where_sql}
         ORDER BY (starts_at IS NULL), starts_at ASC, title ASC
@@ -152,7 +153,7 @@ async def search_events_csv(
     list_sql = f"""
         SELECT id, source, url, title, description,
                starts_at, ends_at, venue, city, country,
-               is_in_person, attendance_mode_uri, extra_json, fetched_at
+               is_in_person, attendance_mode_uri, extra_json, fetched_at, pinned
         FROM events
         {where_sql}
         ORDER BY (starts_at IS NULL), starts_at ASC, title ASC
