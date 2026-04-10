@@ -36,7 +36,7 @@ pytest
 
 What the suite checks:
 
-- **Filters** — `passes_hustle_pitch` rejects income-pitch / side-hustle copy; `passes_beginner_audience` rejects beginner / no-experience positioning; `passes_business_and_ai_keywords` requires AI/ML signals plus business **or** professional/community context (or strong / duplicate AI signals). **London** for most sources; **Meetup** skips London text (`require_london=False`). In-person optional in `should_keep` (commented out).
+- **Filters** — `passes_hustle_pitch` rejects income-pitch / side-hustle copy; `passes_beginner_audience` rejects beginner / no-experience positioning; `passes_business_and_ai_keywords` requires AI/ML signals plus business **or** professional/community context (or strong / duplicate AI signals). **Eventbrite** and **Meetup** use a stricter gate (`strict_professional`): enterprise/B2B/corporate/executive/scale-up or job-title-style terms (e.g. engineer, researcher, CEO) — startup/founder alone is not enough. **Luma** and other sources use the default gate. **London** for most sources; **Meetup** skips London text (`require_london=False`). In-person optional in `should_keep` (commented out).
 - **JSON-LD** — offline vs `VirtualLocation`, London fields from `schema.org` events.
 - **Dates/times** — `parse_iso_datetime`, meta fallbacks, `subEvent`, and stored `starts_at`/`ends_at` in integration tests (`tests/test_datetime_util.py`, `tests/test_schema_datetimes.py`).
 - **Luma** — offline rows parsed; `location_type: online` never becomes a stored event; UTC times and timezone in `extra_json`.
@@ -68,7 +68,7 @@ python -m ai_events export --format jsonl
 
 ## Rules
 
-- **Content** (active): **Hustle / income-pitch** phrases → reject. **Beginner-audience** phrases (e.g. beginners, newcomers, no prior experience, entry level, for beginners) → reject. Otherwise need **AI/ML** terms plus **business** *or* **professional/community** *or* **strong AI** *or* **two+** AI-flavoured hits. See `passes_business_and_ai_keywords`, `passes_hustle_pitch`, and `passes_beginner_audience` in `ai_events/filters.py`.
+- **Content** (active): **Hustle / income-pitch** phrases → reject. **Beginner-audience** phrases (e.g. beginners, newcomers, no prior experience, entry level, for beginners) → reject. Otherwise need **AI/ML** terms plus **business** *or* **professional/community** *or* **strong AI** *or* **two+** AI-flavoured hits — except **Eventbrite** and **Meetup**, which require **enterprise-scale or role** signals (see `strict_professional` in `should_keep`). See `passes_business_and_ai_keywords`, `passes_hustle_pitch`, and `passes_beginner_audience` in `ai_events/filters.py`.
 - **London** (active for Eventbrite, Luma, techUK, seeds): same fields must match London / central postcode-style hints. **Meetup** uses `should_keep(..., require_london=False)`.
 - **Legacy broad matcher** `passes_enterprise_ai` remains for unit tests; it is not used in `should_keep`.
 - **In-person** (disabled): `passes_in_person` is commented out in `should_keep` — re-enable when ready. **Luma** still only ingests **offline** events at the source level.

@@ -133,6 +133,29 @@ _AI_COUNT = re.compile(
     re.I,
 )
 
+# Eventbrite + Meetup: startup/founder alone is not enough — require org-scale or role signals.
+_STRICT_INDUSTRY_SIGNAL = re.compile(
+    r"(?:"
+    r"\benterprise\b|\bb2b\b|\bcorporate\b|"
+    r"\bexecutives?\b|\bc-?suite\b|"
+    r"\bscale[\s-]?ups?\b|\bscaleup\b|"
+    r"\b(?:vice[\s-])?president\b|\b(?:svp|evp)\b|\bvp\b|"
+    r"\b(?:chief|head)\s+of\b|"
+    r"\b(?:CEO|CTO|CIO|CISO|CFO|COO|CMO|CDO|CHRO)\b|"
+    r"\bdirectors?\b|\bprincipal\b|"
+    r"\b(?:data\s+)?scientists?\b|"
+    r"\bresearchers?\b|\bresearch\s+(?:lead|director|scientist|fellow)\b|"
+    r"\b(?:software|systems|ml|ai|data|platform|security)\s+engineers?\b|"
+    r"\bengineers?\b|\bengineering\b|"
+    r"\bdevelopers?\b|"
+    r"\b(?:product|engineering|technical)\s+(?:lead|manager|owner|director)\b|"
+    r"\bprofessors?\b|\bphd\b|"
+    r"\bindustry\b.*\b(?:practitioners?|professionals?|leaders?)\b|"
+    r"\b(?:government|public\s+sector)\b.*\b(?:digital|data|ai)\b"
+    r")",
+    re.I,
+)
+
 
 def _keyword_blob(ev: RawEvent) -> str:
     return " ".join(
@@ -160,10 +183,16 @@ def passes_beginner_audience(ev: RawEvent) -> bool:
     return bool(_BEGINNER_AUDIENCE.search(t))
 
 
-def passes_business_and_ai_keywords(ev: RawEvent) -> bool:
+def passes_business_and_ai_keywords(
+    ev: RawEvent, *, strict_professional: bool = False
+) -> bool:
     """
-    Reject hustle pitches and beginner-only positioning; require AI signal; then
-    business OR professional context, or strong / duplicate AI signals for pure-tech meetups.
+    Reject hustle pitches and beginner-only positioning; require AI signal.
+
+    If ``strict_professional`` (Eventbrite + Meetup): require enterprise / org-scale or
+    job-title-style signals — startup/founder/generic "business" is not sufficient.
+
+    Otherwise: business OR professional context, or strong / duplicate AI signals for pure-tech meetups.
     """
     t = _keyword_blob(ev)
     if len(t.strip()) < 3:
@@ -174,6 +203,8 @@ def passes_business_and_ai_keywords(ev: RawEvent) -> bool:
         return False
     if not _AI_TECH.search(t):
         return False
+    if strict_professional:
+        return bool(_STRICT_INDUSTRY_SIGNAL.search(t))
     if _BUSINESS_CONTEXT.search(t) or _PROFESSIONAL_CONTEXT.search(t):
         return True
     if _STRONG_AI.search(t):
@@ -227,8 +258,12 @@ def passes_in_person(ev: RawEvent) -> bool:
     return True
 
 
-def should_keep(ev: RawEvent, *, require_london: bool = True) -> bool:
-    if not passes_business_and_ai_keywords(ev):
+def should_keep(
+    ev: RawEvent, *, require_london: bool = True, strict_professional: bool = False
+) -> bool:
+    if not passes_business_and_ai_keywords(
+        ev, strict_professional=strict_professional
+    ):
         return False
     if require_london and not passes_london(ev):
         return False

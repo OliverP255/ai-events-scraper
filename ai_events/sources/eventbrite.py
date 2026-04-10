@@ -71,7 +71,7 @@ def run_eventbrite(client: httpx.Client, conn: Connection) -> tuple[int, int]:
         if not parsed:
             continue
         ev = raw_from_parsed("eventbrite", parsed, extra={"listing": "discover"})
-        if should_keep(ev):
+        if should_keep(ev, strict_professional=True):
             upsert_event(conn, ev)
             kept += 1
     return fetched, kept

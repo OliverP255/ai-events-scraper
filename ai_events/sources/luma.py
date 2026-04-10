@@ -13,8 +13,7 @@ from ai_events.models import raw_from_parsed
 from ai_events.storage import upsert_event
 
 LUMA_PAGES = [
-    "https://luma.com/ai",
-    "https://luma.com/london",
+    "https://luma.com/london"
 ]
 
 # Backwards-compatible name for tests / imports

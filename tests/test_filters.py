@@ -79,6 +79,43 @@ def test_passes_business_and_ai_keywords(
     assert passes_business_and_ai_keywords(ev) is expect
 
 
+@pytest.mark.parametrize(
+    "title,desc,expect",
+    [
+        ("Launch your AI startup today", "machine learning workshop", False),
+        ("Founders AI night", "networking and generative AI", False),
+        ("Enterprise AI breakfast", "B2B LLM deployment for executives", True),
+        ("RAG deep dive", "for software engineers and researchers", True),
+        ("Corporate AI summit", "agents and governance", True),
+    ],
+)
+def test_passes_business_and_ai_keywords_strict_professional(
+    title: str, desc: str | None, expect: bool
+) -> None:
+    ev = _ev(title=title, description=desc, venue=None, city="London")
+    assert passes_business_and_ai_keywords(ev, strict_professional=True) is expect
+
+
+def test_should_keep_strict_rejects_startup_only_even_without_london() -> None:
+    ev = _ev(
+        title="Startup AI pitch night",
+        description="Founders and machine learning.",
+        venue="Leeds",
+        city="Leeds",
+    )
+    assert should_keep(ev, require_london=False, strict_professional=True) is False
+
+
+def test_should_keep_strict_allows_engineer_anchor_without_london() -> None:
+    ev = _ev(
+        title="LLM meetup",
+        description="Open discussion for ML engineers.",
+        venue="Leeds",
+        city="Leeds",
+    )
+    assert should_keep(ev, require_london=False, strict_professional=True) is True
+
+
 def test_passes_hustle_pitch_detects_spam() -> None:
     ev = _ev(
         title="Passive income with ChatGPT",
