@@ -1,9 +1,9 @@
-# Enterprise AI events — London (in-person)
+# Enterprise AI events — London 
 
-Python scraper that aggregates **upcoming in-person** events in **London** matching **enterprise / workplace AI** keywords. Data is stored in **PostgreSQL** (Neon or local Docker); the web UI reads the same database.
 
-## Sources
+https://ai-events-web.onrender.com/ 
 
+<<<<<<< HEAD
 | Source | Method |
 |--------|--------|
 | Eventbrite | Discover pages (`/ai/`, `/enterprise-ai/`, `/machine-learning/`, plus legacy category listings) → event pages (`schema.org` JSON-LD) |
@@ -12,6 +12,9 @@ Python scraper that aggregates **upcoming in-person** events in **London** match
 | Seeds | `seeds/urls.txt` — paste public event URLs (e.g. from LinkedIn/X posts) |
 
 Automated scraping of **LinkedIn** or **X** search is not included (login walls, ToS, breakage). Use **seeds** for links you find there.
+=======
+Python scraper that aggregates events in **London** matching **enterprise / workplace AI** keywords. Data is stored in **PostgreSQL** (Neon or local Docker); the web UI reads the same database.
+>>>>>>> ca95f6a8fedec0f6b2bec09613f97e4f374d5f7b
 
 ## Setup
 
@@ -24,6 +27,7 @@ pip install -r requirements.txt
 
 Copy `.env.example` to `.env` and set **`DATABASE_URL`**. For local Postgres: `docker compose up -d`, then `python -m ai_events db apply-schema`.
 
+<<<<<<< HEAD
 ## Tests
 
 Contract and integration tests use **pytest** and **mocked HTTP** (no live sites required). Storage integration tests need **`DATABASE_URL`** and an applied schema (they skip if unset).
@@ -40,6 +44,8 @@ What the suite checks:
 - **Dates/times** — `parse_iso_datetime`, meta fallbacks, `subEvent`, and stored `starts_at`/`ends_at` in integration tests (`tests/test_datetime_util.py`, `tests/test_schema_datetimes.py`).
 - **Eventbrite / seeds** — discovery + detail pipeline; rows excluded when they fail **London**. **techUK** does not require London text. **Meetup** does not re-check London text after GQL discovery (see `tests/test_*_integration.py`).
 
+=======
+>>>>>>> ca95f6a8fedec0f6b2bec09613f97e4f374d5f7b
 ## Run
 
 ```bash
@@ -63,6 +69,7 @@ python -m ai_events serve
 python -m ai_events export --format csv -o out/events.csv
 python -m ai_events export --format jsonl
 ```
+<<<<<<< HEAD
 
 ## Rules
 
@@ -77,3 +84,5 @@ python -m ai_events export --format jsonl
 - Parsing uses `ai_events/datetime_util.py`: supports `Z`, fractional seconds, `+0100`-style offsets, date-only days, and **`subEvent`** in JSON-LD when the parent `Event` omits times.
 - If JSON-LD has no `startDate`/`endDate`, the scraper falls back to **`event:start_time` / `event:end_time`** (and some `itemprop`/`time` tags) when present.
 Respect site terms and `robots.txt`; use reasonable request rates (default single-threaded HTTP client).
+=======
+>>>>>>> ca95f6a8fedec0f6b2bec09613f97e4f374d5f7b
