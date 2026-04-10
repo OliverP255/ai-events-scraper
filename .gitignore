@@ -3,11 +3,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .env
+.env/
 data/
 out/
-sql/
-tests/
-.env/
 .pytest_cache/
-pytest.ini
-docker-compose.yml
