@@ -11,7 +11,38 @@ from ai_events.models import RawEvent
 from ai_events.storage import event_key, upsert_pinned_catalog_event
 
 _DATA = Path(__file__).resolve().parent / "data" / "pinned_events.json"
+_DATA_DETAILS = Path(__file__).resolve().parent / "data" / "pinned_event_details.json"
 _FALLBACK_BASE = "https://pinned.catalog/ai-events"
+
+_PINNED_DETAILS_MAP: dict[str, Any] | None = None
+
+
+def _pinned_details_map() -> dict[str, Any]:
+    global _PINNED_DETAILS_MAP
+    if _PINNED_DETAILS_MAP is None:
+        if not _DATA_DETAILS.is_file():
+            _PINNED_DETAILS_MAP = {}
+        else:
+            raw = json.loads(_DATA_DETAILS.read_text(encoding="utf-8"))
+            _PINNED_DETAILS_MAP = raw if isinstance(raw, dict) else {}
+    return _PINNED_DETAILS_MAP
+
+
+def _is_valid_details(obj: Any) -> bool:
+    if not isinstance(obj, dict):
+        return False
+    sections = obj.get("sections")
+    if not isinstance(sections, list) or not sections:
+        return False
+    for s in sections:
+        if not isinstance(s, dict):
+            return False
+        if not (s.get("title") or "").strip():
+            return False
+        bullets = s.get("bullets")
+        if not isinstance(bullets, list) or not bullets:
+            return False
+    return True
 
 
 def _parse_dt(s: str | None) -> datetime | None:
@@ -35,6 +66,13 @@ def _item_to_raw(item: dict[str, Any]) -> RawEvent:
     }
     if item.get("date_note"):
         extra["date_note"] = item["date_note"]
+    details_obj: Any = item.get("details")
+    if not _is_valid_details(details_obj):
+        mapped = _pinned_details_map().get(slug)
+        if _is_valid_details(mapped):
+            details_obj = mapped
+    if _is_valid_details(details_obj):
+        extra["details"] = details_obj
     url = (item.get("url") or "").strip() or f"{_FALLBACK_BASE}/{slug}"
     return RawEvent(
         source="pinned",

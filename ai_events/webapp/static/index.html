@@ -565,6 +565,48 @@
       list-style: none;
     }
 
+    /* Month sections — list + search grid */
+    .month-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      list-style: none;
+      margin: 0;
+      padding: 1.4rem 0 0.35rem;
+      grid-column: 1 / -1;
+    }
+
+    .month-divider:first-child {
+      padding-top: 0;
+    }
+
+    .month-divider-label {
+      margin: 0;
+      font: inherit;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .month-divider-line {
+      flex: 1;
+      min-width: 1.5rem;
+      height: 1px;
+      border: none;
+      background: linear-gradient(
+        90deg,
+        var(--border-strong) 0%,
+        var(--border) 38%,
+        transparent 100%
+      );
+      opacity: 0.9;
+    }
+
     .card.card-grid {
       display: flex;
       flex-direction: column;
@@ -944,6 +986,10 @@
 
     .backdrop.open { display: flex; }
 
+    .backdrop.pinned-detail-layer {
+      z-index: 50;
+    }
+
     .modal {
       width: 100%;
       max-width: 420px;
@@ -954,6 +1000,111 @@
       border-radius: calc(var(--radius) + 2px);
       padding: 1.15rem 1.25rem 1.25rem;
       box-shadow: var(--shadow-lg), 0 0 0 1px rgba(30, 64, 175, 0.08);
+    }
+
+    .modal.modal-wide {
+      max-width: min(44rem, 96vw);
+      padding: 1.5rem 1.75rem 1.75rem;
+    }
+
+    .modal.modal-wide header {
+      margin: 0 0 1.25rem;
+    }
+
+    .modal.modal-wide h2#pinned-detail-title {
+      font-size: 1.45rem;
+      line-height: 1.3;
+      font-weight: 650;
+      letter-spacing: -0.025em;
+      padding-right: 2rem;
+    }
+
+    .pinned-detail-sections {
+      margin: 0;
+    }
+
+    .pinned-detail-section {
+      margin: 0;
+      padding: 0;
+    }
+
+    .pinned-detail-section:not(:first-child) {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(15, 23, 42, 0.12);
+    }
+
+    .pinned-detail-section h3 {
+      font-family: var(--font);
+      font-size: 1.3125rem;
+      letter-spacing: -0.015em;
+      text-transform: none;
+      color: #0f172a;
+      font-weight: 800;
+      margin: 0 0 0.9rem;
+      line-height: 1.28;
+    }
+
+    .pinned-detail-section ul {
+      margin: 0;
+      padding: 0 0 0 1.5rem;
+      list-style: disc;
+    }
+
+    .pinned-detail-section li {
+      font-size: 1.125rem;
+      line-height: 1.68;
+      margin: 0.6rem 0;
+      color: #1e293b;
+      border: none;
+      padding: 0;
+    }
+
+    .pinned-detail-section li::marker {
+      color: rgba(30, 64, 175, 0.55);
+    }
+
+    .pinned-detail-foot {
+      margin: 1.35rem 0 0;
+      padding-top: 1.1rem;
+      border-top: 1px solid rgba(15, 23, 42, 0.12);
+      font-size: 1.0625rem;
+      line-height: 1.5;
+    }
+
+    .pinned-detail-foot a {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .btn-read-details {
+      appearance: none;
+      margin-top: 0.65rem;
+      padding: 0.38rem 0.75rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #1a1508;
+      background: linear-gradient(180deg, #f3e6c8 0%, #e8d5a8 100%);
+      border: 1px solid rgba(176, 140, 72, 0.75);
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 0 1px rgba(184, 148, 88, 0.2);
+    }
+
+    .btn-read-details:hover {
+      filter: brightness(1.03);
+    }
+
+    .btn-read-details:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .modal .btn-read-details-modal {
+      margin-top: 0.45rem;
     }
 
     .modal header {
@@ -982,18 +1133,19 @@
 
     .modal .close:hover { color: var(--text); }
 
-    .modal ul {
+    /* Day-picker list only — avoids styling pinned-detail bullet lists inside .modal-wide */
+    #day-modal-list {
       list-style: none;
       margin: 0;
       padding: 0;
     }
 
-    .modal li {
+    #day-modal-list > li {
       padding: 0.55rem 0;
       border-bottom: 1px solid var(--border);
     }
 
-    .modal li.modal-li-pinned {
+    #day-modal-list > li.modal-li-pinned {
       margin: 0 -0.35rem;
       padding-left: 0.35rem;
       padding-right: 0.35rem;
@@ -1003,7 +1155,7 @@
       border-bottom: 1px solid rgba(176, 140, 72, 0.45);
     }
 
-    .modal li:last-child { border-bottom: none; }
+    #day-modal-list > li:last-child { border-bottom: none; }
 
     .modal-li-row {
       display: flex;
@@ -1025,7 +1177,7 @@
       text-decoration: underline;
     }
 
-    .modal li .btn-gcal.modal-gcal {
+    #day-modal-list li .btn-gcal.modal-gcal {
       margin-top: 0;
     }
 
@@ -1077,7 +1229,7 @@
     <header>
       <p class="eyebrow">Events</p>
       <h1>Enterprise AI Calendar · London</h1>
-      <p class="sub">Search or browse by month. Filters apply to both views.</p>
+      <p class="sub">Updated every day with new events. Filters apply to both views.</p>
     </header>
 
     <div class="tabs-bar">
@@ -1169,6 +1321,19 @@
       </div>
     </div>
 
+    <div class="backdrop pinned-detail-layer" id="pinned-detail-backdrop" role="dialog" aria-modal="true" aria-labelledby="pinned-detail-title">
+      <div class="modal modal-wide">
+        <button type="button" class="close" id="pinned-detail-close" aria-label="Close">×</button>
+        <header>
+          <h2 id="pinned-detail-title">Event details</h2>
+        </header>
+        <div id="pinned-detail-sections" class="pinned-detail-sections"></div>
+        <p class="pinned-detail-foot" id="pinned-detail-foot" hidden>
+          <a id="pinned-detail-link" href="#" target="_blank" rel="noopener noreferrer">Official event page</a>
+        </p>
+      </div>
+    </div>
+
     <footer>In-person enterprise AI events in London.</footer>
   </div>
 
@@ -1247,6 +1412,89 @@
         return parts.length ? parts.join(" · ") : null;
       };
 
+      function parseExtraJson(row) {
+        let ex = row.extra_json;
+        if (ex == null) return null;
+        if (typeof ex === "string") {
+          try {
+            ex = JSON.parse(ex);
+          } catch (_) {
+            return null;
+          }
+        }
+        return typeof ex === "object" && ex !== null && !Array.isArray(ex) ? ex : null;
+      }
+
+      function getPinnedDetailSections(row) {
+        const ex = parseExtraJson(row);
+        if (!ex) return null;
+        const d = ex.details;
+        if (!d || typeof d !== "object") return null;
+        const sections = d.sections;
+        if (!Array.isArray(sections) || !sections.length) return null;
+        const out = [];
+        for (let i = 0; i < sections.length; i++) {
+          const s = sections[i];
+          if (!s || typeof s !== "object") continue;
+          const title = (s.title && String(s.title).trim()) || "";
+          const bullets = s.bullets;
+          if (!title || !Array.isArray(bullets) || !bullets.length) continue;
+          const cleanBullets = bullets.map((b) => String(b).replace(/\s+/g, " ").trim()).filter(Boolean);
+          if (cleanBullets.length) out.push({ title: title, bullets: cleanBullets });
+        }
+        return out.length ? out : null;
+      }
+
+      function closePinnedDetailsModal() {
+        $("pinned-detail-backdrop").classList.remove("open");
+      }
+
+      function openPinnedDetailsModal(row) {
+        const sections = getPinnedDetailSections(row);
+        if (!sections) return;
+        $("pinned-detail-title").textContent = row.title || "Event details";
+        const wrap = $("pinned-detail-sections");
+        wrap.innerHTML = "";
+        sections.forEach(function (s) {
+          const sec = document.createElement("section");
+          sec.className = "pinned-detail-section";
+          const h = document.createElement("h3");
+          h.textContent = s.title;
+          sec.appendChild(h);
+          const ul = document.createElement("ul");
+          s.bullets.forEach(function (b) {
+            const li = document.createElement("li");
+            li.textContent = b;
+            ul.appendChild(li);
+          });
+          sec.appendChild(ul);
+          wrap.appendChild(sec);
+        });
+        const foot = $("pinned-detail-foot");
+        const link = $("pinned-detail-link");
+        if (row.url && String(row.url).trim()) {
+          link.href = row.url;
+          foot.hidden = false;
+        } else {
+          foot.hidden = true;
+        }
+        $("pinned-detail-backdrop").classList.add("open");
+      }
+
+      function appendReadDetailsButton(container, row, modalVariant) {
+        if (!row.pinned || !getPinnedDetailSections(row)) return;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = modalVariant ? "btn-read-details btn-read-details-modal" : "btn-read-details";
+        btn.textContent = "Read details";
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openPinnedDetailsModal(row);
+        });
+        container.appendChild(btn);
+      }
+
       function googleCalIconSrc() {
         return apiUrl("/static/google-calendar-icon.png");
       }
@@ -1314,6 +1562,34 @@
 
       function ymd(d) {
         return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+      }
+
+      /**
+       * List/grid only: hide events that are fully in the past (local calendar).
+       * Keeps: undated, today or future start (no end), or any row whose ends_at is today00:00 or later.
+       */
+      function isEventUpcomingOrOngoingForListGrid(row) {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const t0 = startOfToday.getTime();
+        if (!row.starts_at && !row.ends_at) return true;
+        if (row.ends_at) {
+          const e = new Date(row.ends_at);
+          if (Number.isNaN(e.getTime())) return true;
+          return e.getTime() >= t0;
+        }
+        if (row.starts_at) {
+          const s = new Date(row.starts_at);
+          if (Number.isNaN(s.getTime())) return true;
+          const s0 = new Date(s);
+          s0.setHours(0, 0, 0, 0);
+          return s0.getTime() >= t0;
+        }
+        return true;
+      }
+
+      function filterSearchItemsForListGrid(items) {
+        return (items || []).filter(isEventUpcomingOrOngoingForListGrid);
       }
 
       /** Earliest start time first; events with no start time last (then by title). */
@@ -1589,7 +1865,49 @@
           d.textContent = row.description.replace(/\s+/g, " ").trim();
           li.appendChild(d);
         }
+        appendReadDetailsButton(li, row, false);
         return li;
+      }
+
+      /** Stable month bucket for grouping (undated last). */
+      function monthDividerKey(row) {
+        if (!row.starts_at) return "9999-13";
+        const d = new Date(row.starts_at);
+        if (Number.isNaN(d.getTime())) return "9999-13";
+        return d.getFullYear() + "-" + pad(d.getMonth() + 1);
+      }
+
+      function monthDividerLabelForRow(row) {
+        if (!row.starts_at) return "Date TBC";
+        const d = new Date(row.starts_at);
+        if (Number.isNaN(d.getTime())) return "Date TBC";
+        return new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(d);
+      }
+
+      function createMonthDivider(label, asLi) {
+        const wrap = document.createElement(asLi ? "li" : "div");
+        wrap.className = "month-divider";
+        const lab = document.createElement("div");
+        lab.className = "month-divider-label";
+        lab.textContent = label;
+        const line = document.createElement("span");
+        line.className = "month-divider-line";
+        line.setAttribute("aria-hidden", "true");
+        wrap.appendChild(lab);
+        wrap.appendChild(line);
+        return wrap;
+      }
+
+      function appendSearchItemsGroupedByMonth(container, items, renderRow, asLiDivider) {
+        let prevKey = null;
+        items.forEach((row) => {
+          const k = monthDividerKey(row);
+          if (k !== prevKey) {
+            container.appendChild(createMonthDivider(monthDividerLabelForRow(row), asLiDivider));
+            prevKey = k;
+          }
+          container.appendChild(renderRow(row));
+        });
       }
 
       function renderSearchResults(items) {
@@ -1608,7 +1926,12 @@
             empty.textContent = "No matching events for these filters.";
             list.appendChild(empty);
           } else {
-            items.forEach((row) => list.appendChild(renderCard(row)));
+            appendSearchItemsGroupedByMonth(
+              list,
+              items,
+              (row) => renderCard(row),
+              true
+            );
           }
         } else {
           $("list").hidden = true;
@@ -1622,7 +1945,12 @@
             empty.textContent = "No matching events for these filters.";
             grid.appendChild(empty);
           } else {
-            items.forEach((row) => grid.appendChild(renderCard(row, { tagName: "article" })));
+            appendSearchItemsGroupedByMonth(
+              grid,
+              items,
+              (row) => renderCard(row, { tagName: "article" }),
+              false
+            );
           }
         }
       }
@@ -1671,6 +1999,7 @@
             }
             li.appendChild(meta);
           }
+          appendReadDetailsButton(li, row, true);
           ul.appendChild(li);
         });
         $("day-backdrop").classList.add("open");
@@ -1691,8 +2020,9 @@
           $("loading").hidden = true;
           $("toolbar").hidden = false;
           $("nodb").hidden = data.database_available;
-          $("count").textContent = data.total + " event" + (data.total === 1 ? "" : "s");
-          lastSearchItems = sortEventsByStartTime(data.items || []);
+          const filtered = filterSearchItemsForListGrid(data.items || []);
+          lastSearchItems = sortEventsByStartTime(filtered);
+          $("count").textContent = lastSearchItems.length + " event" + (lastSearchItems.length === 1 ? "" : "s");
           renderSearchResults(lastSearchItems);
         } catch (e) {
           $("loading").hidden = true;
@@ -1785,8 +2115,17 @@
       $("day-backdrop").addEventListener("click", (e) => {
         if (e.target === $("day-backdrop")) closeDayModal();
       });
+      $("pinned-detail-close").addEventListener("click", closePinnedDetailsModal);
+      $("pinned-detail-backdrop").addEventListener("click", (e) => {
+        if (e.target === $("pinned-detail-backdrop")) closePinnedDetailsModal();
+      });
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeDayModal();
+        if (e.key !== "Escape") return;
+        if ($("pinned-detail-backdrop").classList.contains("open")) {
+          closePinnedDetailsModal();
+          return;
+        }
+        closeDayModal();
       });
 
       fetch(apiUrl("/api/meta"))

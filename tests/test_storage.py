@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 
 from psycopg import Connection
@@ -105,6 +106,36 @@ def test_ensure_pinned_events_loads_full_catalog(pg_conn: Connection) -> None:
     rows = list(iter_events_rows(pg_conn))
     assert len(rows) == 20
     assert sum(1 for r in rows if r.get("pinned")) == 20
+
+
+def test_ensure_pinned_events_attaches_breakdown_details(pg_conn: Connection) -> None:
+    ensure_pinned_events(pg_conn)
+    rows = list(iter_events_rows(pg_conn))
+    with_details = 0
+    for r in rows:
+        ex = r.get("extra_json")
+        if isinstance(ex, str):
+            ex = json.loads(ex)
+        if isinstance(ex, dict) and _is_valid_breakdown(ex.get("details")):
+            with_details += 1
+    assert with_details == 20
+
+
+def _is_valid_breakdown(d: object) -> bool:
+    if not isinstance(d, dict):
+        return False
+    sections = d.get("sections")
+    if not isinstance(sections, list) or len(sections) < 2:
+        return False
+    for s in sections:
+        if not isinstance(s, dict):
+            return False
+        if not (s.get("title") or "").strip():
+            return False
+        bullets = s.get("bullets")
+        if not isinstance(bullets, list) or not bullets:
+            return False
+    return True
 
 
 def test_event_key_pinned_catalog_stable_when_dates_change() -> None:

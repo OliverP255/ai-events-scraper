@@ -72,7 +72,10 @@ async def meta() -> dict[str, object]:
 
 @app.get("/api/events")
 async def api_events(
-    q: str | None = Query(None, description="Full-text search (Postgres plainto_tsquery)"),
+    q: str | None = Query(
+        None,
+        description="Search: semantic (pgvector + embeddings) when enabled and embeddings exist; else Postgres full-text",
+    ),
     source: str | None = Query(None),
     date_from: str | None = Query(None, alias="from"),
     date_to: str | None = Query(None, alias="to"),

@@ -1,4 +1,8 @@
 -- Events table (Neon / Postgres). Apply: python -m ai_events db apply-schema
+-- Semantic search: enable pgvector in the Neon console (or CREATE EXTENSION below) and run
+-- ``python -m ai_events db backfill-embeddings`` after ``ollama pull nomic-embed-text``.
+
+CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE IF NOT EXISTS events (
     id TEXT PRIMARY KEY,
@@ -30,3 +34,8 @@ CREATE INDEX IF NOT EXISTS idx_events_fts ON events USING GIN (search_tsv);
 
 -- Existing deployments created before `pinned` was added:
 ALTER TABLE events ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT false;
+
+-- Must match EMBEDDING_DIM (default 768 for nomic-embed-text via Ollama).
+ALTER TABLE events ADD COLUMN IF NOT EXISTS embedding vector(768);
+
+CREATE INDEX IF NOT EXISTS idx_events_embedding_hnsw ON events USING hnsw (embedding vector_cosine_ops);

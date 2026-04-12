@@ -85,6 +85,20 @@ def cmd_db_apply_schema(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_db_backfill_embeddings(args: argparse.Namespace) -> int:
+    from ai_events.webapp.embed_backfill import backfill_embeddings
+
+    limit = getattr(args, "limit", None)
+    with connect_psycopg() as conn:
+        r = backfill_embeddings(conn, limit=limit)
+    print(
+        f"backfill-embeddings: candidates={r['candidates']} "
+        f"updated={r['updated']} failed={r['failed']}",
+        file=sys.stderr,
+    )
+    return 0
+
+
 def cmd_db_prune_catalog(args: argparse.Namespace) -> int:
     with connect_psycopg() as conn:
         r = prune_stale_catalog_rows(conn)
@@ -206,6 +220,17 @@ def main(argv: list[str] | None = None) -> int:
     d_sub = d.add_subparsers(dest="db_cmd", required=True)
     d_apply = d_sub.add_parser("apply-schema", help="Apply sql/schema.sql (needs DATABASE_URL)")
     d_apply.set_defaults(func=cmd_db_apply_schema)
+    d_emb = d_sub.add_parser(
+        "backfill-embeddings",
+        help="Set events.embedding via Ollama (OLLAMA host + nomic-embed-text); needs pgvector column",
+    )
+    d_emb.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Max rows with NULL embedding to process (default: all)",
+    )
+    d_emb.set_defaults(func=cmd_db_backfill_embeddings)
     d_prune = d_sub.add_parser(
         "prune-catalog",
         help="Remove mock pinned.catalog URLs, stale pinned rows, and scraper rows that duplicate pinned_events.json (title/date)",

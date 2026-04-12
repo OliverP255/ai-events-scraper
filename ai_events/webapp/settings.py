@@ -42,3 +42,45 @@ def database_ssl() -> bool:
     """asyncpg ssl=True for Neon / remote; false for local Docker."""
     u = database_url() or ""
     return sslmode_for_dsn(u) == "require"
+
+
+def semantic_search_enabled() -> bool:
+    """
+    When true (default), ``/api/events?q=`` uses vector similarity if rows have ``embedding``
+    and the embed API works; otherwise falls back to Postgres full-text search.
+    Set ``SEMANTIC_SEARCH=0`` to always use full-text search.
+    """
+    load_env()
+    raw = os.environ.get("SEMANTIC_SEARCH", "1").strip().lower()
+    return raw not in ("0", "false", "no", "off")
+
+
+def embeddings_base_url() -> str:
+    """Ollama host, e.g. ``http://127.0.0.1:11434`` (no path)."""
+    load_env()
+    return (os.environ.get("EMBEDDING_OLLAMA_URL") or "http://127.0.0.1:11434").rstrip("/")
+
+
+def embeddings_api_url() -> str:
+    return f"{embeddings_base_url()}/api/embeddings"
+
+
+def embedding_model() -> str:
+    load_env()
+    return (os.environ.get("EMBEDDING_MODEL") or "nomic-embed-text").strip()
+
+
+def embedding_dimensions() -> int:
+    load_env()
+    try:
+        return int(os.environ.get("EMBEDDING_DIM", "768"))
+    except ValueError:
+        return 768
+
+
+def embedding_http_timeout_s() -> float:
+    load_env()
+    try:
+        return float(os.environ.get("EMBEDDING_HTTP_TIMEOUT", "90"))
+    except ValueError:
+        return 90.0
