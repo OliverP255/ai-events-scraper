@@ -7,7 +7,7 @@ from psycopg import Connection
 
 from ai_events.filters import should_keep
 from ai_events.models import raw_from_parsed
-from ai_events.schema_ld import first_event_dict
+from ai_events.schema_ld import best_event_dict
 from ai_events.storage import upsert_event
 
 
@@ -34,7 +34,7 @@ def run_seeds(client: httpx.Client, conn: Connection, seed_file: Path) -> tuple[
         except httpx.HTTPError:
             continue
         fetched += 1
-        parsed = first_event_dict(r.text, str(r.url))
+        parsed = best_event_dict(r.text, str(r.url))
         if not parsed:
             continue
         ev = raw_from_parsed("seed", parsed, extra={"seed_file": seed_file.name})

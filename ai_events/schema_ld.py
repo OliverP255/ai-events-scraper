@@ -7,6 +7,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 
 from ai_events.datetime_util import extract_meta_event_datetimes, parse_iso_datetime
+from ai_events.html_content import extract_main_text_html, merge_description_with_main_content
 
 EVENT_TYPES = frozenset(
     {
@@ -168,3 +169,73 @@ def first_event_dict(html: str, page_url: str) -> dict[str, Any] | None:
     if parsed.get("ends_at") is None and meta.get("ends_at"):
         parsed["ends_at"] = meta["ends_at"]
     return parsed
+
+
+def fallback_listing_dict(html: str, page_url: str) -> dict[str, Any] | None:
+    """When JSON-LD Event is absent: Open Graph / Twitter meta + HTML title + event meta times."""
+    soup = BeautifulSoup(html, "html.parser")
+    title: str | None = None
+    for attrs in ({"property": "og:title"}, {"name": "twitter:title"}):
+        tag = soup.find("meta", attrs=attrs)
+        if tag and str(tag.get("content", "")).strip():
+            title = str(tag["content"]).strip()
+            break
+    if not title and soup.title and soup.title.string:
+        t = soup.title.string.strip()
+        if t:
+            title = t
+
+    desc: str | None = None
+    for attrs in (
+        {"property": "og:description"},
+        {"name": "twitter:description"},
+        {"name": "description"},
+    ):
+        tag = soup.find("meta", attrs=attrs)
+        if tag and str(tag.get("content", "")).strip():
+            desc = str(tag["content"]).strip()
+            break
+
+    meta = extract_meta_event_datetimes(html)
+    if not (title or desc or meta.get("starts_at")):
+        return None
+
+    t = (title or "(untitled)").strip()
+    if len(t) > 500:
+        t = t[:499].rstrip() + "…"
+
+    return {
+        "title": t,
+        "description": desc,
+        "starts_at": meta.get("starts_at"),
+        "ends_at": meta.get("ends_at"),
+        "venue": None,
+        "city": None,
+        "country": None,
+        "is_in_person": None,
+        "attendance_mode_uri": None,
+        "url": page_url,
+    }
+
+
+def _enrich_dict_with_main_content(html: str, ev: dict[str, Any]) -> None:
+    main = extract_main_text_html(html)
+    if not main:
+        return
+    merged = merge_description_with_main_content(ev.get("description"), main)
+    if merged is not None:
+        ev["description"] = merged
+
+
+def best_event_dict(html: str, page_url: str) -> dict[str, Any] | None:
+    """Prefer schema.org Event JSON-LD; otherwise social / landing-page meta.
+
+    Merges extracted main-body text into ``description`` for keyword filters and LLM.
+    """
+    ev = first_event_dict(html, page_url)
+    if not ev:
+        ev = fallback_listing_dict(html, page_url)
+    if not ev:
+        return None
+    _enrich_dict_with_main_content(html, ev)
+    return ev

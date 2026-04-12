@@ -6,8 +6,9 @@ from typing import Any
 import httpx
 from psycopg import Connection
 
+from ai_events.enterprise_llm import filter_enterprise_events
 from ai_events.filters import should_keep
-from ai_events.models import raw_from_parsed
+from ai_events.models import RawEvent, raw_from_parsed
 from ai_events.schema_ld import first_event_dict
 from ai_events.storage import upsert_event
 
@@ -124,6 +125,7 @@ def discover_event_urls(client: httpx.Client) -> list[str]:
 def run_meetup(client: httpx.Client, conn: Connection) -> tuple[int, int]:
     kept = 0
     fetched = 0
+    candidates: list[RawEvent] = []
     for u in discover_event_urls(client):
         try:
             r = client.get(u)
@@ -136,6 +138,8 @@ def run_meetup(client: httpx.Client, conn: Connection) -> tuple[int, int]:
             continue
         ev = raw_from_parsed("meetup", parsed)
         if should_keep(ev, require_london=False):
-            upsert_event(conn, ev)
-            kept += 1
+            candidates.append(ev)
+    for ev in filter_enterprise_events(client, candidates):
+        upsert_event(conn, ev)
+        kept += 1
     return fetched, kept

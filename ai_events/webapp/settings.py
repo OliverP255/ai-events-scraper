@@ -20,14 +20,25 @@ def database_url() -> str | None:
     return u or None
 
 
-def database_ssl() -> bool:
-    """asyncpg ssl=True for Neon / remote; false for local Docker."""
+def test_database_url() -> str | None:
+    """Postgres URL used only by pytest integration tests (``TRUNCATE events``). Keep separate from production."""
+    u = os.environ.get("TEST_DATABASE_URL", "").strip()
+    return u or None
+
+
+def sslmode_for_dsn(dsn: str) -> str:
+    """``require`` for Neon/remote, ``disable`` for local Docker; respects ``DATABASE_SSL`` override."""
     raw = os.environ.get("DATABASE_SSL", "").strip().lower()
     if raw in ("1", "true", "yes", "require"):
-        return True
+        return "require"
     if raw in ("0", "false", "no"):
-        return False
-    url = database_url() or ""
-    if "localhost" in url or "127.0.0.1" in url:
-        return False
-    return True
+        return "disable"
+    if "localhost" in dsn or "127.0.0.1" in dsn:
+        return "disable"
+    return "require"
+
+
+def database_ssl() -> bool:
+    """asyncpg ssl=True for Neon / remote; false for local Docker."""
+    u = database_url() or ""
+    return sslmode_for_dsn(u) == "require"

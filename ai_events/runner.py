@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import sys
 from pathlib import Path
 
@@ -9,6 +11,7 @@ from ai_events.pinned_dedupe import delete_scraper_rows_duplicating_pinned_catal
 from ai_events.http_util import client as make_client
 from ai_events.pg_connect import connect_psycopg
 from ai_events.sources.eventbrite import run_eventbrite
+from ai_events.sources.google_search import run_google_search
 from ai_events.sources.meetup import run_meetup
 from ai_events.sources.seeds import run_seeds
 from ai_events.sources.techuk import run_techuk
@@ -21,10 +24,14 @@ SOURCES = {
     "eventbrite": run_eventbrite,
     "meetup": run_meetup,
     "techuk": run_techuk,
+    "google_search": run_google_search,
 }
 
 
 def cmd_run(args: argparse.Namespace) -> int:
+    if getattr(args, "no_llm", False):
+        os.environ["ENTERPRISE_LLM_ENABLED"] = "0"
+
     names = [s.strip() for s in args.sources.split(",") if s.strip()]
     if names == ["all"]:
         names = list(SOURCES.keys()) + ["seeds"]
@@ -56,7 +63,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
         import uvicorn
     except ImportError:
         print("Install web deps: pip install -r requirements.txt", file=sys.stderr)
-        raise SystemExit(1) from e
+        raise SystemExit(1) from None
 
     url = f"http://{args.host}:{args.port}/"
     print(f"Open {url} — API {url}api/events", file=sys.stderr)
@@ -102,6 +109,26 @@ def cmd_db_prune_catalog(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_preview_google_search(args: argparse.Namespace) -> int:
+    if getattr(args, "no_llm", False):
+        os.environ["ENTERPRISE_LLM_ENABLED"] = "0"
+    from ai_events.sources.google_search import preview_google_search
+
+    http = make_client(timeout=float(args.timeout))
+    try:
+        data = preview_google_search(
+            http,
+            max_urls_per_query=int(args.max_urls_per_query),
+            max_fetch_total=int(args.max_fetch_total),
+            search_pause_s=float(args.search_pause),
+        )
+    finally:
+        http.close()
+    json.dump(data, sys.stdout, indent=2, ensure_ascii=False)
+    sys.stdout.write("\n")
+    return 0
+
+
 def cmd_export(args: argparse.Namespace) -> int:
     with connect_psycopg() as conn:
         if args.format == "csv":
@@ -126,11 +153,43 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument(
         "--sources",
         default="all",
-        help="Comma-separated: eventbrite,meetup,techuk,seeds or 'all'",
+        help="Comma-separated: eventbrite,meetup,techuk,google_search,seeds or 'all'",
     )
     r.add_argument("--seeds", default=str(DEFAULT_SEEDS), help="Newline-separated seed URLs")
     r.add_argument("--timeout", default="30", help="HTTP timeout seconds")
+    r.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="Disable enterprise LLM filter (keyword filters only; see ENTERPRISE_LLM_ENABLED)",
+    )
     r.set_defaults(func=cmd_run)
+
+    pg = sub.add_parser(
+        "preview-google-search",
+        help="Run google_search discovery + filters; print JSON only (no database writes)",
+    )
+    pg.add_argument("--timeout", default="45", help="HTTP timeout seconds")
+    pg.add_argument(
+        "--max-urls-per-query",
+        default="14",
+        help="Cap URLs per search query (default matches full run)",
+    )
+    pg.add_argument(
+        "--max-fetch-total",
+        default="72",
+        help="Max unique result URLs to fetch (default matches full run)",
+    )
+    pg.add_argument(
+        "--search-pause",
+        default="1.2",
+        help="Seconds to sleep between search queries (rate limit)",
+    )
+    pg.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="Disable enterprise LLM (after_keyword_filter equals after_llm)",
+    )
+    pg.set_defaults(func=cmd_preview_google_search)
 
     e = sub.add_parser("export", help="Dump Postgres to CSV or JSON lines")
     e.add_argument("--format", choices=("csv", "jsonl"), default="csv")
