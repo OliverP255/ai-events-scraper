@@ -527,6 +527,7 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 1rem;
       align-content: start;
+      align-items: stretch;
       margin: 0;
       padding: 0;
       list-style: none;
@@ -585,7 +586,7 @@
     }
 
     .card.card-grid h2 {
-      font-size: 0.98rem;
+      font-size: 1.15rem;
       display: -webkit-box;
       -webkit-line-clamp: 3;
       line-clamp: 3;
@@ -594,6 +595,11 @@
     }
 
     .card.card-grid .desc {
+      margin-top: auto;
+      margin-bottom: 0;
+      padding-top: 0.5rem;
+      width: 100%;
+      min-height: 0;
       -webkit-line-clamp: 4;
       line-clamp: 4;
       display: -webkit-box;
@@ -637,7 +643,7 @@
     }
 
     .card h2 {
-      font-size: 1.05rem;
+      font-size: 1.18rem;
       font-weight: 600;
       letter-spacing: -0.02em;
       margin: 0;
@@ -716,7 +722,7 @@
       object-fit: contain;
     }
 
-    /* Grid: date/time + location above rule; badge + calendar sit below. */
+    /* Grid: date/time above rule; badge + calendar sit below (no location in grid). */
     .card-grid-dateline {
       width: 100%;
       padding-bottom: 0.55rem;
@@ -726,29 +732,19 @@
 
     .card-grid-dateline .when.when-grid {
       width: 100%;
-      margin: 0 0 0.35rem;
-      padding: 0;
-    }
-
-    .card-grid-dateline .when.when-grid:last-child {
-      margin-bottom: 0;
-    }
-
-    .card-grid-dateline .loc.loc-grid {
       margin: 0;
       padding: 0;
-      font-size: 0.85rem;
-      line-height: 1.45;
     }
 
     .card-grid-actions {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-start;
       gap: 0.5rem;
       flex-wrap: wrap;
-      margin: 0 0 0.45rem;
+      margin: 0;
       width: 100%;
+      flex-shrink: 0;
     }
 
     /* Clearer sans for all event date/time (not monospace). */
@@ -761,8 +757,6 @@
       color: var(--muted);
       margin: 0 0 0.35rem;
     }
-
-    .loc { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.6rem; }
 
     .desc {
       font-size: 0.88rem;
@@ -865,8 +859,8 @@
 
     .cal-pill {
       display: block;
-      font-size: 0.74rem;
-      line-height: 1.3;
+      font-size: 0.84rem;
+      line-height: 1.35;
       padding: 0.22rem 0.4rem;
       margin-bottom: 0.2rem;
       border-radius: 5px;
@@ -1021,7 +1015,9 @@
     .modal-li-row .modal-li-title {
       flex: 1;
       min-width: 0;
-      font-weight: 500;
+      font-size: 1.08rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
       border-bottom: none;
     }
 
@@ -1564,8 +1560,6 @@
         when.className = "when";
         when.textContent = fmtWhen(row.starts_at);
 
-        const locStr = locLine(row);
-
         if (tag === "article") {
           top.appendChild(h2);
           li.appendChild(top);
@@ -1573,12 +1567,6 @@
           const dateline = document.createElement("div");
           dateline.className = "card-grid-dateline";
           dateline.appendChild(when);
-          if (locStr) {
-            const lp = document.createElement("p");
-            lp.className = "loc loc-grid";
-            lp.textContent = locStr;
-            dateline.appendChild(lp);
-          }
           li.appendChild(dateline);
           const gridActions = document.createElement("div");
           gridActions.className = "card-grid-actions";
@@ -1594,12 +1582,6 @@
           top.appendChild(actions);
           li.appendChild(top);
           li.appendChild(when);
-          if (locStr) {
-            const p = document.createElement("p");
-            p.className = "loc";
-            p.textContent = locStr;
-            li.appendChild(p);
-          }
         }
         if (row.description) {
           const d = document.createElement("p");
