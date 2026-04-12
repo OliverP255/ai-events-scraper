@@ -1,7 +1,7 @@
 # Enterprise AI events — London 
 
 
-https://ai-events-web.onrender.com/ 
+Production: deploy on [Vercel](https://vercel.com/) (Python / FastAPI; root `app.py` re-exports the app). Set **`DATABASE_URL`** in the project’s Environment Variables (same Neon string as locally). Default region in `vercel.json` is **Frankfurt (`fra1`)**; change it if your DB is elsewhere.
 
 | Source | Method |
 |--------|--------|
@@ -38,6 +38,8 @@ Requires **`DATABASE_URL`**. Options:
 ```bash
 python -m ai_events serve
 ```
+
+Open **`http://127.0.0.1:8000/`** (or your Vercel URL). Opening `index.html` via `file://` is not supported: API calls and asset paths expect an HTTP origin.
 
 ## Export
 

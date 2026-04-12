@@ -125,7 +125,7 @@ async def search_events(
                is_in_person, attendance_mode_uri, extra_json, fetched_at, pinned
         FROM events
         {where_sql}
-        ORDER BY (starts_at IS NULL), starts_at ASC, title ASC
+        ORDER BY starts_at ASC NULLS LAST, title ASC
         LIMIT ${lim_i} OFFSET ${off_i}
     """
 
@@ -156,7 +156,7 @@ async def search_events_csv(
                is_in_person, attendance_mode_uri, extra_json, fetched_at, pinned
         FROM events
         {where_sql}
-        ORDER BY (starts_at IS NULL), starts_at ASC, title ASC
+        ORDER BY starts_at ASC NULLS LAST, title ASC
         LIMIT ${lim_i}
     """
     rows = await db.fetch_all(list_sql, *list_args)

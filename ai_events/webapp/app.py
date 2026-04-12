@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -40,6 +40,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="AI Events", lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
+
+
+@app.get("/calendar-xoaigr9z259n0zw0pl1c.webp", include_in_schema=False)
+async def favicon_webp() -> FileResponse:
+    """Same filename as in index.html rel path so favicon works at site root (e.g. Vercel, local serve)."""
+    path = STATIC / "calendar-xoaigr9z259n0zw0pl1c.webp"
+    if not path.is_file():
+        raise HTTPException(status_code=404)
+    return FileResponse(path, media_type="image/webp")
 
 # Lets the UI work when opened from file:// or another origin (dev); same-origin needs no CORS.
 app.add_middleware(
