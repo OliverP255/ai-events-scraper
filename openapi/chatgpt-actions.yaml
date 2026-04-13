@@ -11,7 +11,7 @@ info:
   version: "1.0.0"
 
 servers:
-  - url: https://REPLACE-WITH-YOUR-HOST
+  - url: https://ai-events-scraper.vercel.app
     description: Deployment base URL (replace before importing)
 
 paths:

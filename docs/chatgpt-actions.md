@@ -20,8 +20,6 @@ Before or after import, the **server base URL** must match your deployment (no t
 - Edit `servers[0].url` in `openapi/chatgpt-actions.yaml` and redeploy, **or**
 - After importing in ChatGPT, set / fix the server URL in the Actions UI if your ChatGPT version allows it.
 
-Placeholder in repo: `https://REPLACE-WITH-YOUR-HOST`.
-
 ## ChatGPT builder steps
 
 1. Create a **Custom GPT** → **Configure** → **Actions** → **Create new action**.
