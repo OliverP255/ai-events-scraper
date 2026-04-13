@@ -15,6 +15,9 @@ from ai_events.webapp.settings import database_url, load_env
 load_env()
 
 STATIC = Path(__file__).resolve().parent / "static"
+# Repo root: ai_events/webapp/app.py → parent ×3
+_ROOT = Path(__file__).resolve().parent.parent.parent
+CHATGPT_OPENAPI_FILE = _ROOT / "openapi" / "chatgpt-actions.yaml"
 
 
 def _parse_dt(raw: str | None) -> datetime | None:
@@ -57,6 +60,18 @@ app.add_middleware(
     allow_methods=["GET", "HEAD", "OPTIONS"],
     allow_headers=["*"],
 )
+
+
+@app.get("/openapi/chatgpt-actions.yaml", include_in_schema=False)
+async def chatgpt_actions_openapi() -> FileResponse:
+    """Serves the trimmed OpenAPI file for ChatGPT Custom GPT → Actions (import from URL)."""
+    if not CHATGPT_OPENAPI_FILE.is_file():
+        raise HTTPException(status_code=404, detail="OpenAPI bundle not found")
+    return FileResponse(
+        CHATGPT_OPENAPI_FILE,
+        media_type="application/yaml",
+        filename="chatgpt-actions.yaml",
+    )
 
 
 @app.get("/api/health")

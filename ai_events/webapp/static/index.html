@@ -375,8 +375,9 @@
 
     body.mode-calendar .cal-nav { display: flex; }
 
-    #cal-today {
-      margin-left: auto;
+    .cal-nav-spacer {
+      flex: 1 1 auto;
+      min-width: 0.75rem;
     }
 
     .cal-nav h2 {
@@ -406,6 +407,21 @@
       border-color: var(--border-strong);
       background: var(--elevated);
       color: var(--text);
+    }
+
+    .cal-fullscreen-btn svg {
+      width: 1.15rem;
+      height: 1.15rem;
+      display: block;
+      margin: auto;
+    }
+
+    .cal-fullscreen-btn[aria-pressed="true"] .cal-fs-icon-enter {
+      display: none;
+    }
+
+    .cal-fullscreen-btn[aria-pressed="false"] .cal-fs-icon-exit {
+      display: none;
     }
 
     .cal-nav button.ghost {
@@ -440,6 +456,57 @@
     body.mode-calendar .meta-search { display: none; }
     body.mode-search .meta-cal { display: none; }
 
+    /* Full-window calendar (toggle from month navigation) */
+    body.calendar-fullscreen.mode-calendar {
+      overflow-x: hidden;
+    }
+
+    body.calendar-fullscreen.mode-calendar .wrap {
+      max-width: none;
+      margin: 0;
+      padding: 0.5rem clamp(0.75rem, 2vw, 1.5rem) 1rem;
+      min-height: 100vh;
+      min-height: 100dvh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body.calendar-fullscreen.mode-calendar header,
+    body.calendar-fullscreen.mode-calendar .tabs-bar,
+    body.calendar-fullscreen.mode-calendar footer,
+    body.calendar-fullscreen.mode-calendar .banner {
+      display: none !important;
+    }
+
+    /* Month + count already in cal-title / grid; toolbar only duplicated that in fullscreen */
+    body.calendar-fullscreen.mode-calendar #toolbar {
+      display: none !important;
+    }
+
+    body.calendar-fullscreen.mode-calendar .cal-nav {
+      flex-shrink: 0;
+      margin-bottom: 0.75rem;
+    }
+
+    body.calendar-fullscreen.mode-calendar #panel-calendar {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    body.calendar-fullscreen.mode-calendar .cal-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    body.calendar-fullscreen.mode-calendar .undated {
+      flex-shrink: 0;
+      margin-top: 0.75rem;
+    }
+
     .state {
       text-align: center;
       padding: 3rem 1rem;
@@ -452,7 +519,8 @@
       50% { opacity: 0.65; }
     }
 
-    #loading:not([hidden]) {
+    #loading:not([hidden]),
+    .cal-loading-overlay:not([hidden]) .cal-loading-label {
       animation: pulse-soft 1.4s ease-in-out infinite;
     }
 
@@ -814,6 +882,7 @@
     /* Single 7-column grid: headers + days share column tracks (avoids misaligned rows). */
     .cal-wrap {
       display: none;
+      position: relative;
       border: 1px solid var(--border);
       border-radius: calc(var(--radius) + 4px);
       overflow-x: auto;
@@ -824,6 +893,42 @@
     }
 
     body.mode-calendar .cal-wrap { display: block; }
+
+    .cal-wrap.cal-loading {
+      min-height: 18rem;
+    }
+
+    .cal-wrap.cal-loading .cal-sheet {
+      opacity: 0.42;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .cal-loading-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: rgba(248, 250, 252, 0.72);
+      backdrop-filter: blur(2px);
+      border-radius: inherit;
+      pointer-events: auto;
+      cursor: wait;
+    }
+
+    .cal-loading-overlay[hidden] {
+      display: none !important;
+    }
+
+    .cal-loading-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
 
     .cal-sheet {
       display: grid;
@@ -852,7 +957,7 @@
     }
 
     .cal-cell {
-      min-height: 8.5rem;
+      min-height: 8.15rem;
       min-width: 0;
       border-right: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
@@ -1004,7 +1109,7 @@
 
     .modal.modal-wide {
       max-width: min(44rem, 96vw);
-      padding: 1.5rem 1.75rem 1.75rem;
+      padding: 1.5rem 2.35rem 2.85rem;
     }
 
     .modal.modal-wide header {
@@ -1066,7 +1171,7 @@
 
     .pinned-detail-foot {
       margin: 1.35rem 0 0;
-      padding-top: 1.1rem;
+      padding: 1.15rem 0 0.35rem;
       border-top: 1px solid rgba(15, 23, 42, 0.12);
       font-size: 1.0625rem;
       line-height: 1.5;
@@ -1288,7 +1393,16 @@
       <button type="button" class="icon" id="cal-prev" aria-label="Previous month">‹</button>
       <button type="button" class="icon" id="cal-next" aria-label="Next month">›</button>
       <h2 id="cal-title">—</h2>
+      <span class="cal-nav-spacer" aria-hidden="true"></span>
       <button type="button" class="ghost" id="cal-today">Today</button>
+      <button type="button" class="icon cal-fullscreen-btn" id="cal-fullscreen" aria-pressed="false" aria-label="Full screen calendar" title="Use the full window for the calendar">
+        <span class="cal-fs-icon-enter" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </span>
+        <span class="cal-fs-icon-exit" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+        </span>
+      </button>
     </div>
 
     <div class="state" id="loading">Loading…</div>
@@ -1302,8 +1416,11 @@
     </div>
 
     <div id="panel-calendar" role="tabpanel" aria-labelledby="tab-calendar" hidden>
-      <div class="cal-wrap">
+      <div class="cal-wrap" id="cal-wrap">
         <div class="cal-sheet" id="cal-sheet" role="grid" aria-label="Month calendar"></div>
+        <div class="cal-loading-overlay" id="cal-loading-overlay" hidden aria-hidden="true">
+          <span class="cal-loading-label">Loading…</span>
+        </div>
       </div>
       <div class="undated" id="undated">
         <h3>No date</h3>
@@ -1373,6 +1490,7 @@
       const TAB_KEY = "ai_events_tab";
       const CAL_KEY = "ai_events_cal";
       const VIEW_KEY = "ai_events_search_view";
+      const CAL_FS_KEY = "ai_events_cal_fullscreen";
 
       /** Last successful search result rows (for re-render when toggling list/grid). */
       let lastSearchItems = [];
@@ -2031,21 +2149,43 @@
         }
       }
 
+      function calMonthTitleString() {
+        return new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(
+          new Date(viewCal.y, viewCal.m, 1)
+        );
+      }
+
+      function updateCalNavTitleOptimistic() {
+        const title = calMonthTitleString();
+        $("cal-title").textContent = title;
+        $("cal-meta").textContent = "Loading… · " + title;
+      }
+
+      function setCalLoading(on) {
+        const wrap = $("cal-wrap");
+        const ov = $("cal-loading-overlay");
+        if (!wrap || !ov) return;
+        wrap.classList.toggle("cal-loading", !!on);
+        ov.hidden = !on;
+        ov.setAttribute("aria-hidden", on ? "false" : "true");
+      }
+
       async function loadCalendar() {
-        $("loading").hidden = false;
         $("err").hidden = true;
+        updateCalNavTitleOptimistic();
+        setCalLoading(true);
         try {
           const qs = buildQueryCalendar();
           const r = await fetch(apiUrl("/api/events?" + qs));
           if (!r.ok) throw new Error("load failed");
           const data = await r.json();
-          $("loading").hidden = true;
+          setCalLoading(false);
           $("toolbar").hidden = false;
           $("panel-calendar").hidden = false;
           $("nodb").hidden = data.database_available;
           renderCalendar(sortEventsByStartTime(data.items || []), data.total ?? 0);
         } catch (e) {
-          $("loading").hidden = true;
+          setCalLoading(false);
           $("err").hidden = false;
           $("err").textContent = loadFailedMessage(e);
         }
@@ -2059,6 +2199,23 @@
         }, 320);
       }
 
+      function syncCalendarFullscreenButton() {
+        const btn = $("cal-fullscreen");
+        if (!btn) return;
+        const on = document.body.classList.contains("calendar-fullscreen");
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.setAttribute("aria-label", on ? "Exit full screen" : "Full screen calendar");
+        btn.title = on ? "Return to normal layout" : "Use the full window for the calendar";
+      }
+
+      function setCalendarFullscreen(on) {
+        const want = !!on;
+        if (want && !document.body.classList.contains("mode-calendar")) return;
+        document.body.classList.toggle("calendar-fullscreen", want);
+        sessionStorage.setItem(CAL_FS_KEY, want ? "1" : "0");
+        syncCalendarFullscreenButton();
+      }
+
       function setTab(search) {
         const isSearch = !!search;
         document.body.classList.toggle("mode-search", isSearch);
@@ -2068,8 +2225,14 @@
         $("panel-search").hidden = !isSearch;
         $("panel-calendar").hidden = isSearch;
         sessionStorage.setItem(TAB_KEY, isSearch ? "search" : "calendar");
-        if (isSearch) loadSearch();
-        else loadCalendar();
+        if (isSearch) {
+          document.body.classList.remove("calendar-fullscreen");
+          sessionStorage.setItem(CAL_FS_KEY, "0");
+          syncCalendarFullscreenButton();
+          loadSearch();
+        } else {
+          loadCalendar();
+        }
       }
 
       $("tab-search").addEventListener("click", () => setTab(true));
@@ -2111,6 +2274,10 @@
         loadCalendar();
       });
 
+      $("cal-fullscreen").addEventListener("click", () => {
+        setCalendarFullscreen(!document.body.classList.contains("calendar-fullscreen"));
+      });
+
       $("day-close").addEventListener("click", closeDayModal);
       $("day-backdrop").addEventListener("click", (e) => {
         if (e.target === $("day-backdrop")) closeDayModal();
@@ -2123,6 +2290,16 @@
         if (e.key !== "Escape") return;
         if ($("pinned-detail-backdrop").classList.contains("open")) {
           closePinnedDetailsModal();
+          return;
+        }
+        if ($("day-backdrop").classList.contains("open")) {
+          closeDayModal();
+          e.preventDefault();
+          return;
+        }
+        if (document.body.classList.contains("calendar-fullscreen") && document.body.classList.contains("mode-calendar")) {
+          setCalendarFullscreen(false);
+          e.preventDefault();
           return;
         }
         closeDayModal();
@@ -2151,9 +2328,11 @@
       const initialTab = sessionStorage.getItem(TAB_KEY) === "calendar" ? "calendar" : "search";
       if (initialTab === "calendar") {
         setTab(false);
+        if (sessionStorage.getItem(CAL_FS_KEY) === "1") setCalendarFullscreen(true);
       } else {
         setTab(true);
       }
+      syncCalendarFullscreenButton();
     })();
   </script>
 </body>

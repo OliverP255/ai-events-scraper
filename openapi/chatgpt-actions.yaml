@@ -1,0 +1,186 @@
+# OpenAPI 3 for ChatGPT Custom GPT → Actions (internal use).
+# Paste into GPT builder → Actions → Import from URL or paste schema.
+# Set servers[0].url to your deployment root (no trailing slash), e.g. https://your-app.vercel.app
+
+openapi: 3.0.3
+info:
+  title: AI Events API
+  description: |
+    Read-only JSON API for enterprise AI events (search, filters, metadata).
+    Search uses semantic (pgvector) when enabled and embeddings exist; otherwise full-text keyword search.
+  version: "1.0.0"
+
+servers:
+  - url: https://REPLACE-WITH-YOUR-HOST
+    description: Deployment base URL (replace before importing)
+
+paths:
+  /api/health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns whether the API is up and DATABASE_URL is configured.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  database_configured:
+                    type: boolean
+                required:
+                  - ok
+                  - database_configured
+
+  /api/meta:
+    get:
+      operationId: getMeta
+      summary: Metadata (sources, DB availability)
+      description: Lists distinct event sources and whether the database pool is available.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sources:
+                    type: array
+                    items:
+                      type: string
+                  database_available:
+                    type: boolean
+                required:
+                  - sources
+                  - database_available
+
+  /api/events:
+    get:
+      operationId: listEvents
+      summary: Search and list events
+      description: |
+        Filter and search events. Omit q for date/source filters only (sorted by start time).
+        With q, uses semantic search when configured and embeddings exist; else Postgres full-text (English).
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: Search query (natural language or keywords).
+          schema:
+            type: string
+        - name: source
+          in: query
+          required: false
+          description: Filter by source slug (see /api/meta sources).
+          schema:
+            type: string
+        - name: from
+          in: query
+          required: false
+          description: ISO 8601 start of date range (filter on starts_at).
+          schema:
+            type: string
+            example: "2026-06-01T00:00:00Z"
+        - name: to
+          in: query
+          required: false
+          description: ISO 8601 end of date range (filter on starts_at).
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Page size (1–500, default 100).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+        - name: offset
+          in: query
+          required: false
+          description: Pagination offset (default 0).
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Paginated event list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Event"
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  database_available:
+                    type: boolean
+                required:
+                  - items
+                  - total
+                  - limit
+                  - offset
+                  - database_available
+
+components:
+  schemas:
+    Event:
+      type: object
+      description: Single calendar/scraped event
+      properties:
+        id:
+          type: string
+        source:
+          type: string
+        url:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        starts_at:
+          type: string
+          nullable: true
+          description: ISO 8601 datetime or null if undated
+        ends_at:
+          type: string
+          nullable: true
+        venue:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        is_in_person:
+          type: boolean
+          nullable: true
+        attendance_mode_uri:
+          type: string
+          nullable: true
+        extra_json:
+          type: object
+          description: Includes pinned breakdown under details.sections when present
+          additionalProperties: true
+        fetched_at:
+          type: string
+          nullable: true
+        pinned:
+          type: boolean
