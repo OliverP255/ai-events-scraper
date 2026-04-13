@@ -24,6 +24,35 @@ LISTINGS = [
     "https://www.eventbrite.com/d/united-kingdom--london/artificial-intelligence--events/",
     "https://www.eventbrite.com/d/united-kingdom--london/data-science--events/",
     "https://www.eventbrite.com/d/united-kingdom--london/technology--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/science-and-tech--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/business--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/professional-networking--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/startups--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/innovation--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/digital-transformation--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/big-data--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/cloud-computing--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/cybersecurity--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/fintech--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/venture-capital--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/leadership--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/chatgpt/",
+    "https://www.eventbrite.com/d/united-kingdom--london/generative-ai/",
+    "https://www.eventbrite.com/d/united-kingdom--london/deep-learning/",
+    "https://www.eventbrite.com/d/united-kingdom--london/natural-language-processing/",
+    "https://www.eventbrite.com/d/united-kingdom--london/computer-vision/",
+    "https://www.eventbrite.com/d/united-kingdom--london/robotics--events/",
+    "https://www.eventbrite.com/d/united-kingdom--london/automation--events/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/ai/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/enterprise-ai/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/machine-learning/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/artificial-intelligence--events/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/data-science--events/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/science-and-tech--events/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/business--events/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/startups--events/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/generative-ai/",
+    "https://www.eventbrite.co.uk/d/united-kingdom--london/big-data--events/",
 ]
 
 
@@ -32,7 +61,7 @@ def _strip_query(url: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
-def discover_event_urls(client: httpx.Client, max_pages: int = 4) -> list[str]:
+def discover_event_urls(client: httpx.Client, max_pages: int = 8) -> list[str]:
     seen: set[str] = set()
     out: list[str] = []
     for base in LISTINGS:

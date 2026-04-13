@@ -50,6 +50,7 @@ def test_meetup_gql_search_matches_product_semantics() -> None:
         "machine learning",
         "LLMs",
         "AI agent",
+        "generative AI",
     }
     assert v["filter"]["radius"] == 25.0
     assert v["filter"]["country"] == "gb"

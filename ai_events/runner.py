@@ -123,6 +123,30 @@ def cmd_db_prune_catalog(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_db_prune_quality(args: argparse.Namespace) -> int:
+    """Remove non-pinned rows that fail keyword filters + same-day title near-duplicates."""
+    from ai_events.db_prune import prune_quality
+
+    dry = bool(getattr(args, "dry_run", False))
+    with connect_psycopg() as conn:
+        if not dry:
+            dup_ids = delete_scraper_rows_duplicating_pinned_catalog(conn)
+            if dup_ids:
+                print(
+                    f"prune-quality: removed {len(dup_ids)} scraper row(s) duplicating pinned catalog",
+                    file=sys.stderr,
+                )
+        report = prune_quality(conn, dry_run=dry)
+    n = report["removed_count"]
+    print(
+        f"prune-quality: {'would remove' if dry else 'removed'} {n} row(s) (filters + duplicates)",
+        file=sys.stderr,
+    )
+    for item in report["removed"]:
+        print(f"  {item['id']}: {item['reason']}", file=sys.stderr)
+    return 0
+
+
 def cmd_preview_google_search(args: argparse.Namespace) -> int:
     if getattr(args, "no_llm", False):
         os.environ["ENTERPRISE_LLM_ENABLED"] = "0"
@@ -236,6 +260,16 @@ def main(argv: list[str] | None = None) -> int:
         help="Remove mock pinned.catalog URLs, stale pinned rows, and scraper rows that duplicate pinned_events.json (title/date)",
     )
     d_prune.set_defaults(func=cmd_db_prune_catalog)
+    d_pq = d_sub.add_parser(
+        "prune-quality",
+        help="Remove non-pinned rows that fail filters.py rules + same-day near-duplicate titles; also scraper dupes of pinned catalog unless --dry-run",
+    )
+    d_pq.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print removals only; do not delete (pinned-catalog dedupe also skipped)",
+    )
+    d_pq.set_defaults(func=cmd_db_prune_quality)
 
     args = p.parse_args(argv)
     code = args.func(args)

@@ -96,6 +96,79 @@
       color: var(--text);
     }
 
+    .gpt-assistant-cta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.85rem 1.25rem;
+      margin-top: 1.35rem;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 1rem 1.2rem;
+      background: linear-gradient(145deg, rgba(30, 64, 175, 0.07) 0%, var(--bg-elevated) 55%, var(--surface) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .gpt-assistant-text {
+      flex: 1 1 12rem;
+      min-width: 0;
+    }
+
+    .gpt-assistant-copy {
+      margin: 0;
+      font-size: 0.97rem;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .gpt-assistant-sub {
+      margin: 0.35rem 0 0;
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 36rem;
+    }
+
+    .gpt-assistant-copy strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    a.btn-gpt-assistant {
+      flex-shrink: 0;
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 1.2rem;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: #fff !important;
+      background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+      border: 1px solid rgba(30, 58, 138, 0.85);
+      border-radius: var(--radius);
+      text-decoration: none !important;
+      border-bottom: none !important;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+      transition: filter 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    a.btn-gpt-assistant:hover {
+      filter: brightness(1.07);
+      border-bottom: none !important;
+    }
+
+    a.btn-gpt-assistant:focus-visible {
+      outline: 2px solid var(--accent-ring);
+      outline-offset: 2px;
+    }
+
     .sub {
       color: var(--muted);
       font-size: 0.97rem;
@@ -1345,6 +1418,18 @@
       <p class="eyebrow">Events</p>
       <h1>Enterprise AI Calendar · London</h1>
       <p class="sub">Updated every day with new events. Filters apply to both views.</p>
+      <div class="gpt-assistant-cta" role="region" aria-label="ChatGPT calendar assistant">
+        <div class="gpt-assistant-text">
+          <p class="gpt-assistant-copy">Access the calendar through the custom GPT</p>
+          <p class="gpt-assistant-sub">Search, filter, and ask questions about events from this site in plain language.</p>
+        </div>
+        <a
+          class="btn-gpt-assistant"
+          href="https://chatgpt.com/g/g-69dd06bbbe388191a22a10a373fd4261-unicornmafia-ai-events-gpt"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Open in ChatGPT</a>
+      </div>
     </header>
 
     <div class="tabs-bar">
