@@ -43,6 +43,8 @@
       background:
         radial-gradient(ellipse 900px 480px at 50% -120px, var(--accent-glow), transparent 55%),
         linear-gradient(180deg, #eff6ff 0%, var(--bg) 42%, var(--bg) 100%);
+      /* After `background` shorthand so it isn’t reset; matches gradient top for canvas / overscroll */
+      background-color: #eff6ff;
       color: var(--text);
       font-family: var(--font);
       font-size: 15px;
