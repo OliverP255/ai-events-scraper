@@ -464,7 +464,8 @@
     body.calendar-fullscreen.mode-calendar .wrap {
       max-width: none;
       margin: 0;
-      padding: 0.5rem clamp(0.75rem, 2vw, 1.5rem) 1rem;
+      /* Noticeable space above month nav; safe-area avoids flush-to-notch on phones */
+      padding: max(1.35rem, env(safe-area-inset-top, 0px)) clamp(0.75rem, 2vw, 1.5rem) 1rem;
       min-height: 100vh;
       min-height: 100dvh;
       box-sizing: border-box;
@@ -498,6 +499,13 @@
     }
 
     body.calendar-fullscreen.mode-calendar .cal-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body.calendar-fullscreen.mode-calendar .cal-sheet {
       flex: 1 1 auto;
       min-height: 0;
     }
@@ -957,7 +965,7 @@
     }
 
     .cal-cell {
-      min-height: 8.15rem;
+      min-height: 0;
       min-width: 0;
       border-right: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
@@ -965,6 +973,8 @@
       background: var(--surface);
       cursor: pointer;
       transition: background 0.18s ease;
+      overflow-y: auto;
+      align-self: stretch;
     }
 
     .cal-sheet > *:nth-child(7n) { border-right: none; }
@@ -1809,6 +1819,10 @@
         return p.toString();
       }
 
+      /**
+       * Place each event on every local calendar day it spans (start date through end date inclusive).
+       * Single-day or missing ends_at: only the start day. Undated → undated list.
+       */
       function bucketByDay(items) {
         const map = new Map();
         const undated = [];
@@ -1817,14 +1831,28 @@
             undated.push(row);
             return;
           }
-          const d = new Date(row.starts_at);
-          if (Number.isNaN(d.getTime())) {
+          const start = new Date(row.starts_at);
+          if (Number.isNaN(start.getTime())) {
             undated.push(row);
             return;
           }
-          const key = ymd(d);
-          if (!map.has(key)) map.set(key, []);
-          map.get(key).push(row);
+          const endRaw = row.ends_at ? new Date(row.ends_at) : null;
+          const hasValidEnd =
+            endRaw && !Number.isNaN(endRaw.getTime()) && endRaw.getTime() >= start.getTime();
+          if (!hasValidEnd) {
+            const key = ymd(start);
+            if (!map.has(key)) map.set(key, []);
+            map.get(key).push(row);
+            return;
+          }
+          const cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+          const endDay = new Date(endRaw.getFullYear(), endRaw.getMonth(), endRaw.getDate());
+          while (cur.getTime() <= endDay.getTime()) {
+            const key = ymd(cur);
+            if (!map.has(key)) map.set(key, []);
+            map.get(key).push(row);
+            cur.setDate(cur.getDate() + 1);
+          }
         });
         map.forEach((arr) => {
           arr.sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
@@ -1908,6 +1936,9 @@
 
           cur.setDate(cur.getDate() + 1);
         }
+
+        const weekRows = Math.ceil(sheet.querySelectorAll(".cal-cell").length / 7);
+        sheet.style.gridTemplateRows = `auto repeat(${weekRows}, minmax(6.5rem, 1fr))`;
 
         const u = $("undated");
         const ul = $("undated-list");

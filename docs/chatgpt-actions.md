@@ -25,7 +25,7 @@ Placeholder in repo: `https://REPLACE-WITH-YOUR-HOST`.
 ## ChatGPT builder steps
 
 1. Create a **Custom GPT** → **Configure** → **Actions** → **Create new action**.
-2. **Import** from URL: `https://<your-deployment>/openapi/chatgpt-actions.yaml` (or paste the YAML).
+2. **Import** from URL: `https://ai-events-scraper.vercel.app/openapi/chatgpt-actions.yaml` (or paste the YAML).
 3. **Authentication:** None (matches current app).
 4. Save and test with prompts like: “List sources”, “Search events about agents in June 2026”, “What’s the health of the API?”
 
@@ -38,7 +38,3 @@ Use a short system-style block, for example:
 - Default **limit** to 50 unless the user needs more (max500).
 - Summarize **items** with title, dates, city, url, source, pinned; for pinned rows, mention `extra_json.details` sections if present.
 - If `database_available` is false or **items** is empty, say the backend may be misconfigured or filters matched nothing.
-
-## Search behaviour (for your team)
-
-With `q` set, the API uses **semantic** search when `SEMANTIC_SEARCH` is on, embeddings exist, and the embed call succeeds; otherwise **Postgres full-text** (`plainto_tsquery`). See `ai_events/webapp/queries.py`.
