@@ -38,21 +38,21 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     with connect_psycopg() as conn:
         n_pin = ensure_pinned_events(conn)
-        print(f"pinned: loaded {n_pin} catalog events", file=sys.stderr)
+        print(f"pinned: loaded {n_pin} catalog events", file=sys.stderr, flush=True)
         http = make_client(timeout=float(args.timeout))
         try:
             for name in names:
                 if name == "seeds":
                     p = Path(args.seeds)
                     f, k = run_seeds(http, conn, p)
-                    print(f"seeds: fetched {f}, kept {k}", file=sys.stderr)
+                    print(f"seeds: fetched {f}, kept {k}", file=sys.stderr, flush=True)
                     continue
                 fn = SOURCES.get(name)
                 if not fn:
                     print(f"Unknown source: {name}", file=sys.stderr)
                     return 2
                 f, k = fn(http, conn)
-                print(f"{name}: fetched {f}, kept {k}", file=sys.stderr)
+                print(f"{name}: fetched {f}, kept {k}", file=sys.stderr, flush=True)
         finally:
             http.close()
     return 0

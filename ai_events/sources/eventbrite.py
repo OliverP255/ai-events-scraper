@@ -17,6 +17,9 @@ EB_URL_RE = re.compile(
     re.I,
 )
 
+# Bound listing crawl so a wide LISTINGS set still finishes in reasonable time.
+_MAX_DISCOVER_URLS = 750
+
 LISTINGS = [
     "https://www.eventbrite.com/d/united-kingdom--london/ai/",
     "https://www.eventbrite.com/d/united-kingdom--london/enterprise-ai/",
@@ -82,6 +85,8 @@ def discover_event_urls(client: httpx.Client, max_pages: int = 8) -> list[str]:
                     seen.add(nu)
                     out.append(nu)
                     new_batch = True
+                    if len(out) >= _MAX_DISCOVER_URLS:
+                        return out
             if not new_batch and page > 1:
                 break
     return out
