@@ -285,6 +285,32 @@ def should_keep(ev: RawEvent, *, require_london: bool = True) -> bool:
     return True
 
 
+def should_keep_seed_url(ev: RawEvent, *, require_london: bool = True) -> bool:
+    """
+    For manually curated seed files: require AI/ML wording, London, and in-person (when
+    schema.org / copy allows detection). Still rejects hustle / beginner / consumer-spam
+    patterns. Omits the founder/exec keyword gate so conference landing pages still qualify.
+    """
+    if is_scraper_duplicate_of_pinned(ev):
+        return False
+    t = _keyword_blob(ev)
+    if len(t.strip()) < 3:
+        return False
+    if passes_hustle_pitch(ev):
+        return False
+    if passes_consumer_ai_hustle(ev):
+        return False
+    if passes_beginner_audience(ev):
+        return False
+    if not _AI_TECH.search(t):
+        return False
+    if require_london and not passes_london(ev):
+        return False
+    if not passes_in_person(ev):
+        return False
+    return True
+
+
 def should_keep_techuk_ai(ev: RawEvent, *, require_london: bool = True) -> bool:
     """
     techUK listings are enterprise-oriented; only require AI/ML-related wording and London.

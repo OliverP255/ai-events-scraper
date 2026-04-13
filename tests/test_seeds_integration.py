@@ -31,8 +31,9 @@ def test_run_seeds(tmp_path: Path, pg_conn: Connection) -> None:
         else httpx.Response(404, text="")
     )
     with httpx.Client(transport=transport) as client:
-        fetched, kept = run_seeds(client, pg_conn, seed)
+        fetched, kept, manual = run_seeds(client, pg_conn, seed)
     assert fetched == 1
     assert kept == 1
+    assert manual == 0
     assert len(list(iter_events_rows(pg_conn))) == 1
     assert list(iter_events_rows(pg_conn))[0]["source"] == "seed"

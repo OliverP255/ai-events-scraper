@@ -13,9 +13,21 @@ from ai_events.pg_connect import connect_psycopg
 from ai_events.sources.eventbrite import run_eventbrite
 from ai_events.sources.google_search import run_google_search
 from ai_events.sources.meetup import run_meetup
-from ai_events.sources.seeds import run_seeds
+from ai_events.sources.seeds import (
+    CURATED_SEED_HUB_URLS,
+    load_manual_seed_rows,
+    raw_event_from_manual_row,
+    refresh_seed_metadata,
+    run_seeds,
+)
 from ai_events.sources.techuk import run_techuk
-from ai_events.storage import export_csv, export_json_lines
+from ai_events.storage import (
+    dedupe_events_by_normalized_url,
+    delete_events_for_normalized_urls,
+    export_csv,
+    export_json_lines,
+    upsert_event,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SEEDS = ROOT / "seeds" / "urls.txt"
@@ -39,13 +51,20 @@ def cmd_run(args: argparse.Namespace) -> int:
     with connect_psycopg() as conn:
         n_pin = ensure_pinned_events(conn)
         print(f"pinned: loaded {n_pin} catalog events", file=sys.stderr, flush=True)
-        http = make_client(timeout=float(args.timeout))
-        try:
-            for name in names:
+
+    http = make_client(timeout=float(args.timeout))
+    try:
+        for name in names:
+            with connect_psycopg() as conn:
                 if name == "seeds":
                     p = Path(args.seeds)
-                    f, k = run_seeds(http, conn, p)
-                    print(f"seeds: fetched {f}, kept {k}", file=sys.stderr, flush=True)
+                    f, k, m = run_seeds(http, conn, p)
+                    d = dedupe_events_by_normalized_url(conn)
+                    print(
+                        f"seeds: fetched {f}, kept_auto {k}, manual {m}, url-dedupe removed {d}",
+                        file=sys.stderr,
+                        flush=True,
+                    )
                     continue
                 fn = SOURCES.get(name)
                 if not fn:
@@ -53,8 +72,37 @@ def cmd_run(args: argparse.Namespace) -> int:
                     return 2
                 f, k = fn(http, conn)
                 print(f"{name}: fetched {f}, kept {k}", file=sys.stderr, flush=True)
-        finally:
-            http.close()
+    finally:
+        http.close()
+    return 0
+
+
+def cmd_refresh_seeds(args: argparse.Namespace) -> int:
+    """Remove hub URLs from DB, re-fetch all seed URLs, upsert parsed metadata (no filter), apply manual JSON, dedupe."""
+    p = Path(args.seeds)
+    with connect_psycopg() as conn:
+        n_del = delete_events_for_normalized_urls(conn, list(CURATED_SEED_HUB_URLS))
+        print(f"refresh-seeds: removed {n_del} hub row(s)", file=sys.stderr, flush=True)
+
+    http = make_client(timeout=float(args.timeout))
+    try:
+        with connect_psycopg() as conn:
+            ok, bad = refresh_seed_metadata(http, conn, p)
+            print(
+                f"refresh-seeds: metadata upserted {ok}, fetch/parse failed {bad}",
+                file=sys.stderr,
+                flush=True,
+            )
+            manual_n = 0
+            for row in load_manual_seed_rows(p):
+                ev = raw_event_from_manual_row(row, seed_file=p.name)
+                upsert_event(conn, ev)
+                manual_n += 1
+            print(f"refresh-seeds: manual supplements {manual_n}", file=sys.stderr, flush=True)
+            d = dedupe_events_by_normalized_url(conn)
+            print(f"refresh-seeds: url-dedupe removed {d}", file=sys.stderr, flush=True)
+    finally:
+        http.close()
     return 0
 
 
@@ -228,6 +276,18 @@ def main(argv: list[str] | None = None) -> int:
         help="Disable enterprise LLM (after_keyword_filter equals after_llm)",
     )
     pg.set_defaults(func=cmd_preview_google_search)
+
+    rf = sub.add_parser(
+        "refresh-seeds",
+        help="Re-fetch seed URLs, upsert parsed metadata (no thin-page filter), apply .manual.json, dedupe; removes known hub URLs from DB",
+    )
+    rf.add_argument(
+        "--seeds",
+        default=str(ROOT / "seeds" / "search_curated_from_web.txt"),
+        help="Newline-separated seed URLs (default: seeds/search_curated_from_web.txt)",
+    )
+    rf.add_argument("--timeout", default="30", help="HTTP timeout seconds")
+    rf.set_defaults(func=cmd_refresh_seeds)
 
     e = sub.add_parser("export", help="Dump Postgres to CSV or JSON lines")
     e.add_argument("--format", choices=("csv", "jsonl"), default="csv")

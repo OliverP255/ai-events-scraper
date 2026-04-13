@@ -1843,7 +1843,7 @@
         if (src) p.set("source", src);
         if ($("fromd").value) p.set("from", $("fromd").value + "T00:00:00");
         if ($("tod").value) p.set("to", $("tod").value + "T23:59:59");
-        p.set("limit", "100");
+        p.set("limit", "500");
         p.set("offset", "0");
         return p.toString();
       }
@@ -2258,7 +2258,8 @@
           $("nodb").hidden = data.database_available;
           const filtered = filterSearchItemsForListGrid(data.items || []);
           lastSearchItems = sortEventsByStartTime(filtered);
-          $("count").textContent = lastSearchItems.length + " event" + (lastSearchItems.length === 1 ? "" : "s");
+          const total = typeof data.total === "number" ? data.total : lastSearchItems.length;
+          $("count").textContent = total + " event" + (total === 1 ? "" : "s");
           renderSearchResults(lastSearchItems);
         } catch (e) {
           $("loading").hidden = true;

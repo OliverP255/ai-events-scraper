@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 from datetime import date, datetime, timezone
+from collections import defaultdict
 from typing import Any, Iterator
 
 from psycopg import Connection
@@ -95,6 +96,63 @@ def upsert_event(conn: Connection, ev: RawEvent) -> None:
             ),
         )
     conn.commit()
+
+
+def delete_events_for_normalized_urls(conn: Connection, urls: list[str]) -> int:
+    """Delete rows whose normalized URL matches any in ``urls`` (e.g. hub pages)."""
+    if not urls:
+        return 0
+    targets = {_norm_url(u) for u in urls if u.strip()}
+    if not targets:
+        return 0
+    with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute("SELECT id, url FROM events")
+        rows = list(cur)
+    to_delete = [str(r["id"]) for r in rows if _norm_url(str(r["url"])) in targets]
+    if not to_delete:
+        return 0
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM events WHERE id = ANY(%s)", (to_delete,))
+    conn.commit()
+    return len(to_delete)
+
+
+def dedupe_events_by_normalized_url(conn: Connection) -> int:
+    """
+    Remove extra rows that share the same normalized URL. Keeps one row per URL:
+    pinned first, then most recently fetched, then lexicographically smallest id.
+    """
+    with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute(
+            "SELECT id, url, pinned, fetched_at FROM events",
+        )
+        rows = list(cur)
+    buckets: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        nu = _norm_url(str(row["url"]))
+        buckets[nu].append(dict(row))
+
+    to_delete: list[str] = []
+    for group in buckets.values():
+        if len(group) < 2:
+            continue
+
+        def sort_key(r: dict[str, Any]) -> tuple[int, float, str]:
+            pin = 0 if r.get("pinned") else 1
+            fa = r.get("fetched_at")
+            ts = -fa.timestamp() if isinstance(fa, datetime) else 0.0
+            return (pin, ts, str(r["id"]))
+
+        group.sort(key=sort_key)
+        for r in group[1:]:
+            to_delete.append(str(r["id"]))
+
+    if not to_delete:
+        return 0
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM events WHERE id = ANY(%s)", (to_delete,))
+    conn.commit()
+    return len(to_delete)
 
 
 def upsert_pinned_catalog_event(conn: Connection, ev: RawEvent) -> None:
