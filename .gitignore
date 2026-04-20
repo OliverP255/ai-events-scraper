@@ -9,3 +9,4 @@ out/
 .pytest_cache/
 vercel.json
 run.log
+.claude/

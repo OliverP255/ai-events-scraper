@@ -171,6 +171,22 @@ def cmd_db_prune_catalog(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_db_dedupe(args: argparse.Namespace) -> int:
+    """Remove duplicate non-pinned rows: same normalized URL, then same-day near-duplicate titles."""
+    from ai_events.db_prune import dedupe_scraper_duplicates
+
+    with connect_psycopg() as conn:
+        r = dedupe_scraper_duplicates(conn)
+    print(
+        f"dedupe: removed {r['normalized_url_removed']} row(s) (same normalized URL), "
+        f"{r['same_day_title_removed_count']} row(s) (same day + similar title)",
+        file=sys.stderr,
+    )
+    for item in r["same_day_title_removed"]:
+        print(f"  {item['id']}: {item['reason']}", file=sys.stderr)
+    return 0
+
+
 def cmd_db_prune_quality(args: argparse.Namespace) -> int:
     """Remove non-pinned rows that fail keyword filters + same-day title near-duplicates."""
     from ai_events.db_prune import prune_quality
@@ -314,6 +330,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Remove mock pinned.catalog URLs, stale pinned rows, and scraper rows that duplicate pinned_data/pinned_events.json (title/date)",
     )
     d_prune.set_defaults(func=cmd_db_prune_catalog)
+    d_dedupe = d_sub.add_parser(
+        "dedupe",
+        help="Remove non-pinned duplicate rows: same normalized URL, then same-day + similar title (see storage + db_prune)",
+    )
+    d_dedupe.set_defaults(func=cmd_db_dedupe)
     d_pq = d_sub.add_parser(
         "prune-quality",
         help="Remove non-pinned rows that fail filters.py rules + same-day near-duplicate titles; also scraper dupes of pinned catalog unless --dry-run",

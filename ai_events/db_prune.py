@@ -143,33 +143,12 @@ def _choose_keeper(cluster: list[dict[str, Any]]) -> dict[str, Any]:
     )
 
 
-def prune_quality(conn: Connection, *, dry_run: bool = False) -> dict[str, Any]:
+def _same_day_title_duplicate_deletions(active: list[dict[str, Any]]) -> dict[str, str]:
     """
-    Delete non-pinned events that fail current filters, then delete same-day near-duplicate scraper rows.
-    Pinned rows are never deleted.
+    Same calendar day (or both dates null) + title similarity thresholds as ``prune_quality``.
+    Returns ids to remove mapped to a short reason (keeper chosen via ``_choose_keeper``).
     """
-    with conn.cursor(row_factory=dict_row) as cur:
-        cur.execute(
-            """
-            SELECT id, source, url, title, description, starts_at, ends_at, venue, city, country,
-                   is_in_person, attendance_mode_uri, extra_json, pinned
-            FROM events
-            ORDER BY starts_at NULLS LAST, title
-            """
-        )
-        rows = list(cur.fetchall())
-
     to_delete: dict[str, str] = {}
-
-    for r in rows:
-        if r.get("pinned"):
-            continue
-        ev = row_dict_to_raw(r)
-        reason = filter_failure_reason(ev)
-        if reason:
-            to_delete[str(r["id"])] = f"not_enterprise_ai: {reason}"
-
-    active = [r for r in rows if str(r["id"]) not in to_delete and not r.get("pinned")]
     n = len(active)
     parent = list(range(n))
 
@@ -218,6 +197,37 @@ def prune_quality(conn: Connection, *, dry_run: bool = False) -> dict[str, Any]:
                 f"duplicate: same day + title similarity; kept id={keeper['id']} "
                 f"source={keeper.get('source')} title={ktitle!r}"
             )
+    return to_delete
+
+
+def prune_quality(conn: Connection, *, dry_run: bool = False) -> dict[str, Any]:
+    """
+    Delete non-pinned events that fail current filters, then delete same-day near-duplicate scraper rows.
+    Pinned rows are never deleted.
+    """
+    with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute(
+            """
+            SELECT id, source, url, title, description, starts_at, ends_at, venue, city, country,
+                   is_in_person, attendance_mode_uri, extra_json, pinned
+            FROM events
+            ORDER BY starts_at NULLS LAST, title
+            """
+        )
+        rows = list(cur.fetchall())
+
+    to_delete: dict[str, str] = {}
+
+    for r in rows:
+        if r.get("pinned"):
+            continue
+        ev = row_dict_to_raw(r)
+        reason = filter_failure_reason(ev)
+        if reason:
+            to_delete[str(r["id"])] = f"not_enterprise_ai: {reason}"
+
+    active = [r for r in rows if str(r["id"]) not in to_delete and not r.get("pinned")]
+    to_delete.update(_same_day_title_duplicate_deletions(active))
 
     removed_list = [{"id": i, "reason": to_delete[i]} for i in sorted(to_delete.keys())]
 
@@ -234,4 +244,42 @@ def prune_quality(conn: Connection, *, dry_run: bool = False) -> dict[str, Any]:
         "dry_run": dry_run,
         "removed_count": len(to_delete),
         "removed": removed_list,
+    }
+
+
+def dedupe_scraper_duplicates(conn: Connection) -> dict[str, Any]:
+    """
+    Remove duplicate non-pinned rows: (1) same normalized URL (keeps pinned, then newest
+    ``fetched_at``, then smallest id), (2) same calendar day + high title similarity
+    (same rule as ``prune_quality``).
+    """
+    from ai_events.storage import dedupe_events_by_normalized_url
+
+    n_url = dedupe_events_by_normalized_url(conn)
+    with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute(
+            """
+            SELECT id, source, url, title, description, starts_at, ends_at, venue, city, country,
+                   is_in_person, attendance_mode_uri, extra_json, pinned
+            FROM events
+            ORDER BY starts_at NULLS LAST, title
+            """
+        )
+        rows = list(cur.fetchall())
+    active = [r for r in rows if not r.get("pinned")]
+    dup = _same_day_title_duplicate_deletions(active)
+    removed_title: list[dict[str, str]] = []
+    if dup:
+        with conn.cursor() as cur:
+            for eid in dup:
+                cur.execute(
+                    "DELETE FROM events WHERE id = %s AND COALESCE(pinned, false) = false",
+                    (eid,),
+                )
+        conn.commit()
+        removed_title = [{"id": i, "reason": dup[i]} for i in sorted(dup.keys())]
+    return {
+        "normalized_url_removed": n_url,
+        "same_day_title_removed_count": len(dup),
+        "same_day_title_removed": removed_title,
     }

@@ -28,7 +28,25 @@ _LONDON = re.compile(
     r"london|greater\s+london|"
     r"ec[1-4][a-z]?\b|wc[12][a-z]?\b|sw1[a-z]\b|"
     r"e1[0-9a-z]{1,2}\b|w1[0-9a-z]{1,2}\b|"
-    r"city\s+of\s+london|canary\s+wharf|shoreditch|westminster"
+    r"city\s+of\s+london|canary\s+wharf|shoreditch|westminster|"
+    r"tobacco\s+dock|olympia\s+london|exce?l\s+london|qeii\s+centre|"
+    r"kings?\s+cross|bankside|soho|mayfair|aldgate|moorgate|"
+    r"liverpool\s+street|paddington|waterloo|charing\s+cross|"
+    r"old\s+street|angel|farringdon|barbican|broadgate"
+    r")\b",
+    re.I,
+)
+
+# Non-London UK cities to reject (enterprise events outside London are out of scope)
+_NON_LONDON_UK = re.compile(
+    r"\b("
+    r"manchester|birmingham|edinburgh|glasgow|bristol|"
+    r"leeds|liverpool|newcastle|sheffield|nottingham|"
+    r"belfast|cardiff|reading|oxford|cambridge|"
+    r"brighton|southampton|plymouth|leicester|coventry|"
+    r"hull|stoke|bradford|derby|wolverhampton|"
+    r"frankfurt|paris|amsterdam|berlin|barcelona|madrid|"
+    r"orlando|florida|new\s+york|san\s+francisco|singapore|dubai"
     r")\b",
     re.I,
 )
@@ -155,7 +173,42 @@ _FOUNDER_EXEC_TECH_LEADER = re.compile(
     r"\bgo[- ]?to[- ]?market\b|\bgtm\b|"
     r"\bcommercial\b|\brevenue\b|"
     r"\bproduct\s+(?:leader|strategy|leadership)\b|"
-    r"\bstrategic\b|\bstrategy\b|\broundtable\b|\bsummit\b"
+    r"\bstrategic\b|\bstrategy\b|\broundtable\b|\bsummit\b|"
+    r"\b(?:chief\s+)?marketing\s+(?:officer|leader|director)\b|"
+    r"\b(?:chief\s+)?hr\s+(?:officer|leader|director)\b|"
+    r"\bhuman\s+resources\b|\bpeople\s+(?:leader|director|officer)\b|"
+    r"\bdecision[- ]?makers?\b|\bsenior\s+leaders?\b|"
+    r"\bprivate\s+(?:equity|capital)\b|\bpe\s+firm\b|"
+    r"\binstitutional\s+investors?\b"
+    r")",
+    re.I,
+)
+
+# Online/virtual-only event indicators (reject if matched, unless also in-person in London).
+_ONLINE_ONLY = re.compile(
+    r"(?:"
+    r"\bonline\s+(?:only|event|webinar|workshop)\b|"
+    r"\bvirtual\s+(?:only|event|webinar|workshop|conference)\b|"
+    r"\bzoom\b|\bteams\s+meeting\b|\bwebex\b|"
+    r"\blink\s+(?:visible\s+)?for\s+attendees\b|"
+    r"\bregister\s+to\s+receive\s+(?:the\s+)?link\b|"
+    r"\baccess\s+(?:the\s+)?link\s+after\s+register"
+    r")",
+    re.I,
+)
+
+# Article/blog/list content (not actual events) — reject if matched.
+_ARTICLE_NOT_EVENT = re.compile(
+    r"(?:"
+    r"\btop\s+\d+\s+(?:ai|machine\s+learning|ml)\s+(?:conferences|events|summits)\b|"
+    r"\bbest\s+(?:ai|ml)\s+(?:conferences|events)\b|"
+    r"\bupcoming\s+(?:ai|ml)\s+(?:conferences|events)\s+(?:in\s+)?(?:2024|2025|2026)\b|"
+    r"\b\d+\s+(?:must-attend|top)\s+(?:ai|ml)\s+(?:events|conferences)\b|"
+    r"\btrends\s+in\s+ai\b|\bai\s+trends\b|"
+    r"\bhow\s+ai\s+(?:will|is)\s+(?:transform|shape|impact)\b|"
+    r"\bthe\s+future\s+of\s+ai\b|"
+    r"\bexplore\s+the\s+(?:agenda|trends)\b|"
+    r"\bpress\s+release\b"
     r")",
     re.I,
 )
@@ -203,6 +256,42 @@ def passes_founders_executives_tech_leaders(ev: RawEvent) -> bool:
     """True if copy signals founders, execs, investors, or senior tech-business audience."""
     t = _keyword_blob(ev)
     return bool(_FOUNDER_EXEC_TECH_LEADER.search(t))
+
+
+def passes_online_only(ev: RawEvent) -> bool:
+    """True if event appears to be online-only (should reject for in-person requirement)."""
+    t = _keyword_blob(ev)
+    if _ONLINE_ONLY.search(t):
+        # Check if there's also an in-person component in London
+        if ev.venue and _LONDON.search(ev.venue):
+            return False  # Has London venue, not online-only
+        if ev.city and _LONDON.search(ev.city):
+            return False  # Has London city, not online-only
+        return True  # Appears online-only
+    return False
+
+
+def passes_article_not_event(ev: RawEvent) -> bool:
+    """True if content looks like an article/list/blog post rather than an actual event."""
+    t = _keyword_blob(ev)
+    return bool(_ARTICLE_NOT_EVENT.search(t))
+
+
+def rejects_non_london_location(ev: RawEvent) -> bool:
+    """True if event is explicitly located outside London (other UK cities or international)."""
+    t = _keyword_blob(ev)
+    # Check if non-London location is mentioned
+    if _NON_LONDON_UK.search(t):
+        # But verify London isn't also mentioned (could be multi-city)
+        if _LONDON.search(t):
+            # Both mentioned - check venue/city for clarity
+            if ev.city and _NON_LONDON_UK.search(ev.city) and not _LONDON.search(ev.city):
+                return True
+            if ev.venue and _NON_LONDON_UK.search(ev.venue) and not _LONDON.search(ev.venue):
+                return True
+            return False  # London is mentioned, keep it
+        return True  # Non-London location without London mention
+    return False
 
 
 def passes_business_and_ai_keywords(ev: RawEvent) -> bool:
@@ -276,12 +365,23 @@ def passes_in_person(ev: RawEvent) -> bool:
 def should_keep(ev: RawEvent, *, require_london: bool = True) -> bool:
     if is_scraper_duplicate_of_pinned(ev):
         return False
+    # Must have a date (reject articles/lists without event dates)
+    if not ev.starts_at:
+        return False
     if not passes_business_and_ai_keywords(ev):
         return False
-    if require_london and not passes_london(ev):
+    if require_london:
+        if not passes_london(ev):
+            return False
+        # Explicitly reject events located outside London
+        if rejects_non_london_location(ev):
+            return False
+    # Reject online-only events (require in-person in London)
+    if passes_online_only(ev):
         return False
-    # if not passes_in_person(ev):
-    #     return False
+    # Reject articles/blog posts that aren't actual events
+    if passes_article_not_event(ev):
+        return False
     return True
 
 

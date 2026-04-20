@@ -4,26 +4,30 @@ https://ai-events-scraper.vercel.app/
 
 A Python scraper that discovers in-person London enterprise AI events from multiple sources, stores them in PostgreSQL/Neon, and serves them via a FastAPI web application with full-text and semantic search.
 
+- Currently scrapes eventbrite, meetup, techuk and google search. 
+- Linkedin/socials had too many irrelevant posts for scraping actual events, google search had much better results
+- The google search uses serper.dev api with a total of 2,500 queries for free, hopefully should be enough. 
+
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         DATA INGESTION                               │
+│                         DATA INGESTION                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Sources          Discovery      Fetch        Parse       Filter    │
 │  ────────         ──────────     ─────        ─────       ──────    │
-│  eventbrite   →   listing URLs   →  HTML   →  JSON-LD  →  keywords │
-│  meetup       →   GraphQL API    →  HTML   →  JSON-LD  →  (LLM)    │
-│  techuk       →   calendar API   →  HTML   →  JSON-LD             │
-│  google_search →  search results →  HTML   →  JSON-LD             │
-│  seeds        →   manual URLs    →  HTML   →  JSON-LD             │
+│  eventbrite   →   listing URLs   →  HTML   →  JSON-LD  →  keywords  │
+│  meetup       →   GraphQL API    →  HTML   →  JSON-LD  →  (LLM)     │
+│  techuk       →   calendar API   →  HTML   →  JSON-LD               │
+│  google_search →  search results →  HTML   →  JSON-LD               │
+│  seeds        →   manual URLs    →  HTML   →  JSON-LD               │
 └─────────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         STORAGE                                      │
+│                         STORAGE                                     │
 ├─────────────────────────────────────────────────────────────────────┤
-│  PostgreSQL/Neon                                                     │
+│  PostgreSQL/Neon                                                    │
 │  - events table with tsvector (full-text search)                    │
 │  - pgvector extension for semantic search (optional)                │
 │  - pinned events protected from scraper overwrites                  │
@@ -31,9 +35,9 @@ A Python scraper that discovers in-person London enterprise AI events from multi
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         PRESENTATION                                 │
+│                         PRESENTATION                                │
 ├─────────────────────────────────────────────────────────────────────┤
-│  FastAPI Web App                                                     │
+│  FastAPI Web App                                                    │
 │  - GET /api/events (search, filter, paginate)                       │
 │  - GET /api/export (CSV download)                                   │
 │  - Full-text search (tsvector) or semantic (pgvector)               │

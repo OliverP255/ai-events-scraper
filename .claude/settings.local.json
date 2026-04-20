@@ -11,7 +11,11 @@
       "Bash(python3 -c \"from ai_events.sources.google_custom_search import run_google_cse, preview_google_cse; print\\('Import OK'\\)\")",
       "Bash(python3 -c \"from ai_events.sources.google_search import run_google_search, preview_google_search; print\\('Import OK'\\)\")",
       "WebSearch",
-      "WebFetch(domain:developers.google.com)"
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:serper.dev)",
+      "Bash(python3 -m ai_events preview-google-search)",
+      "Bash(python3 -m ai_events run --sources google_search)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }
