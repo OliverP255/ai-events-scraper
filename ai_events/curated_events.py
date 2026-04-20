@@ -10,8 +10,8 @@ from psycopg import Connection
 from ai_events.models import RawEvent
 from ai_events.storage import event_key, upsert_pinned_catalog_event
 
-_DATA = Path(__file__).resolve().parent / "data" / "pinned_events.json"
-_DATA_DETAILS = Path(__file__).resolve().parent / "data" / "pinned_event_details.json"
+_DATA = Path(__file__).resolve().parent / "pinned_data" / "pinned_events.json"
+_DATA_DETAILS = Path(__file__).resolve().parent / "pinned_data" / "pinned_event_details.json"
 _FALLBACK_BASE = "https://pinned.catalog/ai-events"
 
 _PINNED_DETAILS_MAP: dict[str, Any] | None = None
@@ -98,7 +98,7 @@ def load_pinned_event_dicts() -> list[dict[str, Any]]:
 
 
 def allowed_pinned_catalog_ids() -> set[str]:
-    """Stable ``events.id`` values for the current ``pinned_events.json`` catalog."""
+    """Stable ``events.id`` values for the current ``pinned_data/pinned_events.json`` catalog."""
     out: set[str] = set()
     for item in load_pinned_event_dicts():
         if not isinstance(item, dict) or not item.get("slug") or not item.get("title"):

@@ -4,7 +4,7 @@ __pycache__/
 .DS_Store
 .env
 .env/
-data/
+local_db/
 out/
 .pytest_cache/
 vercel.json

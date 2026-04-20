@@ -1,7 +1,15 @@
 """
-HTML search discovery (no API keys): Google result pages + DuckDuckGo HTML fallback.
+DEPRECATED: HTML search discovery (no API keys).
 
-Result pages and target sites may block datacenter IPs; this is best-effort only.
+This module is kept for reference but is NOT recommended for use.
+- Google serves non-parseable responses to non-browser clients (blocks/redirects)
+- DuckDuckGo blocks datacenter IPs
+- Result: zero URLs discovered in practice
+
+Use `google_custom_search.py` instead, which uses the official Google Custom Search API.
+To enable, set GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID environment variables.
+
+See: ai_events/sources/google_custom_search.py
 """
 
 from __future__ import annotations

@@ -1,0 +1,431 @@
+{
+  "techex-global-ai-big-data-expo-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Large-scale technology expo: AI & Big Data Expo Global sits alongside other TechEx tracks (e.g. IoT, cyber, DevOps), so you get a wide vendor and practitioner ecosystem in one venue.",
+          "Heavy on expo floor, keynotes, and track sessions aimed at organisations evaluating or scaling data and AI platforms.",
+          "Strong fit if you want to compare enterprise stacks, meet systems integrators, and read near-term buyer priorities."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CIOs, CTOs, heads of data and analytics, and programme owners for AI and modernisation.",
+          "Cloud and data platform vendors, analytics consultancies, and implementation partners hunting enterprise deals.",
+          "Technical architects and data engineers tasked with turning strategy into pipelines, governance, and production ML."
+        ]
+      }
+    ]
+  },
+  "gartner-cio-leadership-forum-london-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Gartner-run forum aimed at senior IT leadership: strategy, operating model, risk, and technology investment choices—including AI as a core theme alongside broader digital priorities.",
+          "Agenda blends Gartner analyst frameworks with CIO peer discussion; less of a trade-show floor, more executive problem-solving.",
+          "Useful for calibrating how large enterprises govern AI spend, vendor selection, and organisational change."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CIOs and senior IT leaders from mid-market and large enterprises across sectors.",
+          "Gartner advisors and invited speakers shaping how boards expect IT to report on AI value and risk.",
+          "Vendor executives sometimes present, but the centre of gravity is buyer-side leadership."
+        ]
+      }
+    ]
+  },
+  "ai-engineer-europe-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Engineering-first conference focused on building with LLMs: tooling, evaluation, agents, and production patterns rather than high-level strategy decks alone.",
+          "Typically draws people shipping code and systems—workshops and deep talks outweigh generic “future of AI” keynotes.",
+          "Strong focus on what is technically feasible now versus slide-ware-only messaging."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "Staff engineers, ML/platform leads, and technical founders building AI products.",
+          "Developer-tool vendors and API providers who want hands-on users and design partners.",
+          "Some investors scouting teams with execution depth; hiring managers looking for senior ICs."
+        ]
+      }
+    ]
+  },
+  "generative-ai-summit-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Enterprise-oriented summit (IQPC / AI Data Analytics Network family) centred on generative AI adoption, use cases, and operating models.",
+          "Strong emphasis on business cases, governance, and organisational change as GenAI moves from pilots to wider rollout.",
+          "Audience skews toward leaders who must justify GenAI budgets to boards and regulators."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "Digital, innovation, and transformation heads plus line-of-business sponsors of AI initiatives.",
+          "Risk, compliance, and data governance stakeholders increasingly pulled into GenAI programmes.",
+          "Consultancies and vendors targeting enterprise rollouts rather than hobbyist builders."
+        ]
+      }
+    ]
+  },
+  "kmworld-europe-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Conference focused on knowledge management, enterprise search, content, and intelligent information access—areas that overlap heavily with RAG, copilots, and internal AI assistants.",
+          "Often attracts owners of intranets, document repositories, and customer-support knowledge bases modernising with AI.",
+          "Pre-conference workshops sometimes dive deeper into tooling and methods."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "Heads of knowledge, information management, and enterprise search; increasingly data leaders involved in unstructured data strategy.",
+          "Vendors in search, content services, and document AI; integrators connecting legacy ECM to new AI layers.",
+          "Practitioners responsible for findability, compliance, and knowledge retention at scale."
+        ]
+      }
+    ]
+  },
+  "aws-summit-london-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Free, high-traffic AWS regional summit: keynotes, hundreds of breakout sessions, and a large expo focused on building and running workloads on AWS—including AI/ML services.",
+          "Single-day format with a broad cross-section of industries and skill levels.",
+          "Strong on product roadmaps, architecture patterns, and partner ecosystem visibility."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "Cloud engineers, platform teams, and solutions architects from enterprises standardising on AWS.",
+          "AWS partners (consultancies, ISVs) and recruiters hunting cloud/ML talent.",
+          "IT leaders scanning how their teams should adopt managed AI services versus bespoke stacks."
+        ]
+      }
+    ]
+  },
+  "gartner-data-analytics-summit-london-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Gartner’s flagship data and analytics conference: strategy for D&A leadership, AI embedded across analytics, governance, and value measurement.",
+          "Heavy focus on how CDAOs align with CIOs/CFOs and prove impact.",
+          "Provides frameworks for data product thinking, AI governance, and vendor landscape navigation."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CDAOs, heads of data science/engineering, and senior analytics leaders.",
+          "Gartner analysts and invited executives discussing enterprise-wide data monetisation and AI risk.",
+          "Technology providers targeting the office of the CDAO."
+        ]
+      }
+    ]
+  },
+  "ai-in-business-conference-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Single-day conference focused on practical AI in business, often co-located with digital transformation programming so attendees span tech and business roles.",
+          "Sessions tend toward adoption stories, operating models, and change management rather than pure research.",
+          "Compact format suits focused networking without multi-day fatigue."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "Business leaders sponsoring AI initiatives alongside IT counterparts.",
+          "Transformation and programme directors juggling vendors and internal stakeholders.",
+          "Mid-sized enterprise delegates who want actionable takeaways more than vendor theatre."
+        ]
+      }
+    ]
+  },
+  "ai-conference-london-tech-summit-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Tech Summit–branded AI conference emphasising enterprise innovation, leadership, and technology strategy.",
+          "Typically mixes keynotes and panels aimed at senior decision-makers responsible for AI and digital agendas.",
+          "Single-day structure keeps the audience concentrated."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CIOs, CTOs, and heads of AI from organisations modernising core systems and customer channels.",
+          "Technology vendors and regional consultancies targeting leadership attendees.",
+          "Innovation and partnership leads scouting emerging suppliers."
+        ]
+      }
+    ]
+  },
+  "gartner-finance-symposium-xpo-london-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Gartner event for CFOs and finance leadership with a growing emphasis on AI-driven forecasting, close automation, risk analytics, and digital finance operating models.",
+          "Combines strategic keynotes with Xpo floor exposure to finance technology providers.",
+          "Strong lens on governance, controls, and ROI—how finance should oversee enterprise AI spend."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CFOs, finance transformation leaders, controllers, and FP&A executives.",
+          "Procurement and IT finance partners involved in enterprise software decisions.",
+          "Vendors selling ERP adjacency, close tools, and AI analytics for finance."
+        ]
+      }
+    ]
+  },
+  "london-tech-week-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "London Tech Week (LTW) is the UK’s flagship annual technology festival—run as a major Informa Tech / Informa Festivals programme—built around a central expo and content stages at Olympia London plus a city-wide fringe of partner and satellite events.",
+          "The 2026 edition is publicised as 8–12 June: core expo and main stage programming 8–10 June at Olympia, with a broader fringe programme advertised across London through 12 June, so the week mixes a concentrated “main campus” experience with dozens of distributed meetups, breakfasts, and sector sessions.",
+          "Positioning is deliberately cross-ecosystem: enterprise adoption, startups and scale-ups, capital (VC, CVC, growth equity), and public-policy / institutional voices—so AI appears throughout, alongside cloud, cyber, fintech, climate-tech, and general digital transformation narratives rather than a single narrow vertical."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "C-suite and functional leaders (CIO, CTO, CDO, CISO, CPO, CFO office) plus heads of innovation, transformation, and AI centres of excellence from UK and international organisations.",
+          "Founders, startup operators, and accelerator cohorts; investors and corporate venture teams scouting deals and partnerships; Big Tech and hyperscaler regional leadership often visible on main stages.",
+          "Government, regulators, and trade-body figures in UK tech and digital policy slots—useful for reading how AI governance, safety, and competitiveness narratives are being framed for enterprise audiences.",
+          "Press, analysts, and recruiters—expect high footfall and noisy floors; serious buyers usually pre-book meetings and anchor around specific sub-events (e.g. The AI Summit London, investor lounges, invitation-only roundtables)."
+        ]
+      },
+      {
+        "title": "Format, Scale & How to Plan",
+        "bullets": [
+          "Scale is large by design (the programme markets tens of thousands of attendees, hundreds of speakers, and 70+ discrete events)—treat LTW as a portfolio week: pick a small set of must-see stages and fringe sessions rather than trying to “cover everything.”",
+          "Venue split matters: Olympia anchors the trade-show and headline content; Tobacco Dock and other London venues host major co-located conferences during the same week—check calendars for overlaps and travel time between sites.",
+          "Enterprise value is highest when you align attendance to a clear objective: vendor shortlists, partnership sourcing, talent market sensing, or policy risk scanning—then use the official agenda, app, and side-event lists to protect calendar bandwidth."
+        ]
+      }
+    ]
+  },
+  "the-ai-summit-london-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Major commercial AI conference: large expo, multi-track agenda, and significant vendor and enterprise buyer traffic.",
+          "Coverage spans applied AI across industries—vision, language, automation, and platform plays.",
+          "High energy and volume; think curated serendipity if you plan well."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "Enterprise IT and AI leaders, innovation teams, and startup founders seeking enterprise customers.",
+          "Global technology vendors, cloud providers, and systems integrators with large booths.",
+          "Press, analysts, and investors scanning market momentum."
+        ]
+      }
+    ]
+  },
+  "google-cloud-summit-london-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Google Cloud summit showcasing infrastructure, data, analytics, and AI services—Gemini, Vertex AI, and customer stories on running workloads on GCP.",
+          "Mix of technical breakouts and executive content aimed at existing and prospective GCP customers.",
+          "Strong partner ecosystem presence."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "Cloud architects, data engineers, and AI leads on GCP or evaluating multi-cloud strategies.",
+          "Google Cloud partners and specialised consultancies.",
+          "Business owners seeking regulated, data-rich AI patterns on Google’s stack."
+        ]
+      }
+    ]
+  },
+  "ai-world-congress-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Broad AI conference positioning at the intersection of research, enterprise deployment, and emerging tech narratives.",
+          "Programme typically mixes strategic keynotes with more technical streams on implementation and integration.",
+          "Two-day format allows deeper exposure than single-day pop-ups."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CTOs, heads of innovation, and senior technologists evaluating AI roadmaps.",
+          "Academics and advanced practitioners alongside vendor strategists.",
+          "International delegates; useful for cross-border benchmarking and partner scouting."
+        ]
+      }
+    ]
+  },
+  "reuters-momentum-ai-london-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Reuters Events–style executive conference emphasising enterprise AI strategy, value realisation, and governance narratives trusted by large organisations.",
+          "Agenda often connects AI to risk, compliance, and operational resilience—themes familiar to regulated industries.",
+          "High production quality and senior speaker line-ups."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CIOs, CDOs, CTOs, and strategy officers from enterprises under public and regulatory scrutiny.",
+          "Consultancies and advisory firms supporting board-level AI programmes.",
+          "Technology vendors targeting top-down enterprise sales motions."
+        ]
+      }
+    ]
+  },
+  "ai-in-finance-summit-london-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "RE•WORK summit focused on AI applications in banking, markets, insurance, and fintech—fraud, credit, customer experience, and automation.",
+          "Single-track or focused multi-track days with deep practitioner talks.",
+          "Smaller than mega-expos; higher density of domain specialists."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "ML leads, data scientists, and innovation heads inside financial institutions.",
+          "Regtech and core technology vendors selling into finance.",
+          "Startups seeking proofs of concept with banks and insurers."
+        ]
+      }
+    ]
+  },
+  "ai-live-the-london-summit-2026": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "BizClik-backed summit and awards programme focusing on generative AI, automation, and enterprise transformation storytelling.",
+          "Blends conference content with recognition of teams and vendors—useful for scanning who markets themselves as leaders.",
+          "Strong media and brand presence around the event footprint."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "C-suite and senior leaders interested in visibility and thought leadership as well as procurement.",
+          "Marketing and communications leaders alongside technology owners.",
+          "Sponsors and partners using the event for brand and lead generation."
+        ]
+      }
+    ]
+  },
+  "techex-global-ai-big-data-expo-2027": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Later edition of the AI & Big Data Expo Global series—same broad TechEx ecosystem of enterprise technology tracks and expo format.",
+          "Programme details are updated as the organiser publishes each wave of sessions and co-located tracks.",
+          "Expect a similar mix of vendors, practitioners, and multi-track sessions to recent years."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "Likely similar to other editions in this series: senior technology and data leaders, architects, and a wide partner ecosystem.",
+          "Vendors preparing multi-year enterprise pipeline development.",
+          "Teams aligning multi-year partner and pipeline plans with major expo cycles."
+        ]
+      }
+    ]
+  },
+  "chief-ai-officer-summit-uk-rework-2027": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "RE•WORK summit aimed at Chief AI Officers and senior leaders responsible for enterprise AI strategy, scaling, and governance.",
+          "Programming emphasises cross-functional alignment, risk management, and building durable AI capabilities—not one-off pilots.",
+          "Often includes optional workshops or add-on days beyond the core summit—worth scanning the full programme structure."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CAIOs or equivalent heads of AI centres of excellence, plus legal, risk, and data counterparts they bring along.",
+          "Senior vendor strategists targeting top-down AI programmes.",
+          "Peers comparing operating models for centralised vs federated AI teams."
+        ]
+      }
+    ]
+  },
+  "gartner-cio-leadership-forum-london-2027": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Following edition of the CIO Leadership Forum from Gartner—same general format with refreshed research and priority themes.",
+          "Expect analyst-led sessions on IT leadership, digital business, AI implications for enterprise architecture, and risk.",
+          "Official agenda shows how emphasis shifts year on year (AI security, vendor management, talent models, etc.)."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CIOs and senior IT executives planning multi-year technology roadmaps.",
+          "Gartner speakers and facilitators shaping enterprise buying narratives.",
+          "Select technology and services providers in sponsor capacities."
+        ]
+      }
+    ]
+  },
+  "cdao-uk-2027": {
+    "sections": [
+      {
+        "title": "What It Is",
+        "bullets": [
+          "Corinium’s CDAO UK gathering for chief data and analytics officers and senior data/AI executives—peer-driven agendas, roundtables, and case-led sessions.",
+          "Focus on aligning data strategy, analytics value, and AI enablement with enterprise goals.",
+          "Format stays heavy on roundtables and closed-door peer sessions rather than a giant expo floor."
+        ]
+      },
+      {
+        "title": "Who You're Likely to Meet",
+        "bullets": [
+          "CDAOs, CDOs, heads of analytics/engineering, and their direct reports from large UK and international firms.",
+          "Technology and services firms targeting the office of the chief data officer.",
+          "Peers exchanging playbooks on data mesh, governance, and AI productisation."
+        ]
+      }
+    ]
+  }
+}

@@ -12,7 +12,7 @@ from psycopg import Connection
 
 from ai_events.models import RawEvent
 
-_DATA = Path(__file__).resolve().parent / "data" / "pinned_events.json"
+_DATA = Path(__file__).resolve().parent / "pinned_data" / "pinned_events.json"
 
 
 def _parse_iso(s: str | None) -> datetime | None:

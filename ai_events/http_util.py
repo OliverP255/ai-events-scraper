@@ -19,7 +19,3 @@ def client(timeout: float = 30.0) -> httpx.Client:
     )
 
 
-def fetch_text(url: str, client: httpx.Client) -> str:
-    r = client.get(url)
-    r.raise_for_status()
-    return r.text

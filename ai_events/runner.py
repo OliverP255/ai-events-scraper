@@ -206,7 +206,6 @@ def cmd_preview_google_search(args: argparse.Namespace) -> int:
             http,
             max_urls_per_query=int(args.max_urls_per_query),
             max_fetch_total=int(args.max_fetch_total),
-            search_pause_s=float(args.search_pause),
         )
     finally:
         http.close()
@@ -252,23 +251,18 @@ def main(argv: list[str] | None = None) -> int:
 
     pg = sub.add_parser(
         "preview-google-search",
-        help="Run google_search discovery + filters; print JSON only (no database writes)",
+        help="Run google_search discovery via Custom Search API; print JSON only (no database writes)",
     )
     pg.add_argument("--timeout", default="45", help="HTTP timeout seconds")
     pg.add_argument(
         "--max-urls-per-query",
-        default="14",
-        help="Cap URLs per search query (default matches full run)",
+        default="10",
+        help="Cap URLs per search query (default 10, max 10 per CSE API)",
     )
     pg.add_argument(
         "--max-fetch-total",
-        default="72",
-        help="Max unique result URLs to fetch (default matches full run)",
-    )
-    pg.add_argument(
-        "--search-pause",
-        default="1.2",
-        help="Seconds to sleep between search queries (rate limit)",
+        default="100",
+        help="Max unique result URLs to fetch (default 100)",
     )
     pg.add_argument(
         "--no-llm",
@@ -317,7 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     d_emb.set_defaults(func=cmd_db_backfill_embeddings)
     d_prune = d_sub.add_parser(
         "prune-catalog",
-        help="Remove mock pinned.catalog URLs, stale pinned rows, and scraper rows that duplicate pinned_events.json (title/date)",
+        help="Remove mock pinned.catalog URLs, stale pinned rows, and scraper rows that duplicate pinned_data/pinned_events.json (title/date)",
     )
     d_prune.set_defaults(func=cmd_db_prune_catalog)
     d_pq = d_sub.add_parser(

@@ -84,3 +84,15 @@ def embedding_http_timeout_s() -> float:
         return float(os.environ.get("EMBEDDING_HTTP_TIMEOUT", "90"))
     except ValueError:
         return 90.0
+
+
+def google_search_api_key() -> str | None:
+    """Google Custom Search API key for google_search source."""
+    load_env()
+    return os.environ.get("GOOGLE_SEARCH_API_KEY", "").strip() or None
+
+
+def google_search_engine_id() -> str | None:
+    """Google Programmable Search Engine ID (cx parameter)."""
+    load_env()
+    return os.environ.get("GOOGLE_SEARCH_ENGINE_ID", "").strip() or None
